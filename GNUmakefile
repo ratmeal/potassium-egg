@@ -63,13 +63,70 @@ $(KERNEL): $(OBJ)
 -include $(HEADER_DEPS)
 %.o: %.c
 	$(CC) $(CFLAGS) $(INTERNALCFLAGS) -c $< -o $@
- 
+.PHONY: everything
+everything:
+	@echo "---OS BUILD START!---"
+	@echo "---BUILDING THE KERNEL---"
+	@make
+	@echo "---KERNEL BUILD COMPLETE---"
+	@echo "---PERFORMING STAGE2---"
+	@make stage2
+	@echo "---STAGE2 COMPLETE---"
+	@echo "OS BUILT WITH NO ERRORS!"
+	@echo "---OS BUILD COMPLETE---"
+.PHONY: run
+run:
+	@echo "---RUNNING---"
+	@qemu-system-x86_64 image.iso -serial stdio -enable-kvm -m 3G -smp 2
+	@echo "---RUNNING FINISHED---"
 # Remove object files and the final executable.
 .PHONY: clean
 clean:
-	rm -rf $(KERNEL) $(OBJ) $(HEADER_DEPS)
-	rm image.iso
-	rm -rf limine
-	rm -rf iso_root
+ifeq "$(wildcard $(KERNEL))" "$(KERNEL)"
+	@echo "Removing Kernel and object files..."
+	@rm -rf $(KERNEL) $(OBJ) $(HEADER_DEPS)
+	@echo "Done!"
+else
+	@echo "No kernel or object files to clean, Skipping..."
+endif
+ifneq "$(wildcard *.iso)" ""
+	@echo "Removing image.iso"
+	@rm -rf *.iso
+	@echo "Done!"
+else
+	@echo "No image to clean, Skipping..."
+endif
+ifeq "$(wildcard limine)" "limine"
+	@echo "Removing the Limine Folder"
+	@rm -rf limine
+	@echo "Done!"
+else
+	@echo "No limine folder to clean, Skipping..."
+endif
+ifeq "$(wildcard iso_root)" "iso_root"
+	@echo "Removing the iso_root Folder"
+	@rm -rf iso_root
+	@echo "Done!"
+else
+	@echo "No iso_root folder to clean, Skipping..."
+endif
+	@echo "---LEFTOVER CLEANUP---"
+ifneq "$(wildcard *.d)" ""
+	@echo "Removing .d files"
+	@rm -rf *.d
+	@echo "Done!"
+else
+	@echo "No .d files to clean, Skipping..."
+endif
+ifneq "$(wildcard *.o)" ""
+	@echo "Removing .o files"
+	@rm -rf *.o
+	@echo "Done!"
+else
+	@echo "No .o files to clean, Skipping..."
+endif
+	@echo "---LEFTOVER CLEANUP---"
 stage2:
-	./stage2.sh
+	@echo "---STAGE 2---"
+	@./stage2.sh
+	@echo "---STAGE 2---"
