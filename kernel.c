@@ -29,7 +29,9 @@ void _start(void) {
     // a simple "Hello World" to screen.
     struct limine_terminal *terminal = terminal_request.response->terminals[0];
     terminal_request.response->write(terminal, "Hello World", 11);
-    terminal_request.response->write(terminal, "Only a test", 50);
+    terminal_request.response->write(terminal, "Only a test", 11);
+    terminal_request.response->write(terminal, "Goofy", 5);
+    
  
     // We're done, just hang...
     done();
