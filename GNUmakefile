@@ -37,7 +37,8 @@ override INTERNALCFLAGS :=   \
 	-mno-sse2            \
 	-mno-red-zone        \
 	-mcmodel=kernel      \
-	-MMD
+	-MMD				 \
+	-w 					 
  
 # Internal linker flags that should not be changed by the user.
 override INTERNALLDFLAGS :=    \

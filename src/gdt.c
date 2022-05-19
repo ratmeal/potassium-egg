@@ -9,7 +9,7 @@ struct gdtr_t {
 uint64_t init_gdt(void) 
 {
     
-    struct gdtr_t gdtr = {0x48, (uint64_t)gdt};
+    struct gdtr_t gdtr = {sizeof(gdt) - 1, (uint64_t)gdt};
     __asm__ volatile ("lgdt %0" :: "m" (gdtr));
     return gdt;
 };
