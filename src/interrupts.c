@@ -47,8 +47,8 @@ void init_idt(void)
     // idt
     struct InterruptDescriptor64 idt[256];
     // setup interrupts
-    add_idt_entry(0x21, &keyboard_interrupt, 0x28, 0x8E, idt);
     add_idt_entry(0, &divide_error, 0x28, 0x8E, idt);
+    add_idt_entry(0x21, &keyboard_interrupt, 0x28, 0x8E, idt);
     // idt pointer
     struct idt_pointer idtp = {
         .limit = sizeof(idt) - 1,

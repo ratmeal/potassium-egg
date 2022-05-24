@@ -14,7 +14,10 @@ static volatile struct limine_terminal_request terminal_request = {
     .id = LIMINE_TERMINAL_REQUEST,
     .revision = 0
 };
-
+struct limine_memmap_request memmap = {
+    .id = LIMINE_MEMMAP_REQUEST,
+    .revision = 0
+};
 
 static void done(void) {
     for (;;) {
@@ -37,7 +40,6 @@ void _start(void) {
      || terminal_request.response->terminal_count < 1) {
         done();
     }
-    
     // We should now be able to call the Limine terminal to print out
     // a simple "Hello World" to screen.
     struct limine_terminal *terminal = terminal_request.response->terminals[0];
@@ -51,8 +53,9 @@ void _start(void) {
     serial_print("IDT loaded lol\n");
     kprintf_limine("[Kernel] IDT Loaded\n", sizeof("[Kernel] IDT Loaded\n"));
     kprintf_limine("Hello World!\n", sizeof("Hello World!\n"));
-    __asm__ volatile ("int $0");
-    // trigger a keyboard interrupt
+    char str[20];
+    dec_to_str(memmap.response->entry_count, str);
+    kprintf_limine(str, sizeof(str));
     done();
     
 };
