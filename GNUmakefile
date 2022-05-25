@@ -80,6 +80,11 @@ run:
 	@echo "---RUNNING---"
 	@qemu-system-x86_64 image.iso -serial stdio -enable-kvm -m 3G -smp 2
 	@echo "---RUNNING FINISHED---"
+.PHONY: debug_run
+debug_run:
+	@echo "---RUNNING---"
+	@qemu-system-x86_64 image.iso -serial stdio -d int -m 3G -smp 2 -no-reboot -no-shutdown -gdb tcp::1234 -singlestep
+	@echo "---RUNNING FINISHED---"
 # Remove object files and the final executable.
 .PHONY: clean
 clean:

@@ -1,3 +1,6 @@
+// PHOTON INTERNEL "Wave" Kernel
+// Code is governed by the GPL-2.0 license.
+
 #include <stdint.h>
 // include serial.h
 #include "serial.h"
@@ -30,6 +33,7 @@ void divide_error()
     serial_print("DIVIDE ERROR LOL");
     kprintf_limine("DIVIDE ERROR!\n", sizeof("DIVIDE ERROR!\n"));
 }
+
 // wha
 // add interrupt descriptor to idt
 void add_idt_entry(uint8_t interrupt, void *handler, uint16_t selector, uint8_t flags, struct InterruptDescriptor64 idt[256])
@@ -49,6 +53,8 @@ void init_idt(void)
     // setup interrupts
     add_idt_entry(0, &divide_error, 0x28, 0x8E, idt);
     add_idt_entry(0x21, &keyboard_interrupt, 0x28, 0x8E, idt);
+    // add page fault expection
+    add_idt_entry(0x0E, &page_fault, 0x28, 0x8E, idt);
     // idt pointer
     struct idt_pointer idtp = {
         .limit = sizeof(idt) - 1,
