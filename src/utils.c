@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <limine.h>
+#include <stdbool.h>
 // dec to string
 void dec_to_str(uint64_t dec, char* str) 
 {
@@ -52,11 +53,36 @@ void *memset(void *dest, int c, size_t size)
         destm[i] = (uint8_t)c;
     }
     return dest;
-};
+}
 void bitreset(void *bitmap, uint64_t index)
 {
     uint64_t *fbitmap = (uint64_t)&bitmap;
     uint64_t bits_type = sizeof(uint64_t) * 8;
     uint64_t test_index = index % bits_type;
     fbitmap[index / bits_type] &= ~((uint64_t)1 << test_index);
-};
+}
+bool bittest(void *bitmap, uint64_t index)
+{
+    uint64_t *fbitmap = (uint64_t)&bitmap;
+    uint64_t bits_type = sizeof(uint64_t) * 8;
+    uint64_t test_index = index % bits_type;
+    uint64_t test_sample = fbitmap[index / bits_type];
+    return ((test_sample >> test_index) & (uint64_t)1) != 0;
+}
+void bitset(void *bitmap, uint64_t index)
+{
+    uint64_t *fbitmap = (uint64_t)&bitmap;
+    uint64_t bits_type = sizeof(uint64_t) * 8;
+    uint64_t test_index = index % bits_type;
+    fbitmap[index / bits_type] |= (uint64_t)1 << test_index;
+}
+void *memcpy(void *dest, void *src, uint64_t size)
+{
+    uint8_t *destm = (uint8_t *)dest;
+    uint8_t *srcm = (uint8_t *)src;
+    for (int i = 0; i < size; i++)
+    {
+        destm[i] = srcm[i];
+    }
+    return dest;
+}

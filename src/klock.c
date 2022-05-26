@@ -12,6 +12,7 @@ struct lock
     atomic_bool locked;
     uint64_t caller;
 };
+
 void release(struct lock *l)
 {
     // Stolen Brutal Code lmao

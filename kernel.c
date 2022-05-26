@@ -8,6 +8,7 @@
 #include "src/serial.h"
 #include "src/interrupts.h"
 #include "src/pmm.h"
+#include "src/vmm.h"
  
 // The Limine requests can be placed anywhere, but it is important that
 // the compiler does not optimise them away, so, usually, they should
@@ -53,5 +54,6 @@ void _start(void) {
     serial_print("IDT loaded\n");
     kprintf_limine("[Wave Kernel] IDT Has Loaded!\n", sizeof("[Wave Kernel] IDT Has Loaded!\n"));
     pmm_init();
+    kprintf_limine("[Wave Kernel] PMM Has Loaded!\n", sizeof("[Wave Kernel] PMM Has Loaded!\n"));
     done();
 };
