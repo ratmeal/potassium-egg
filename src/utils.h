@@ -1,3 +1,5 @@
+#ifndef UTILS.h
+#define UTILS.h
 #include <stdbool.h>
 void dec_to_str(uint64_t dec, char* str);
 void hex_to_str(uint64_t hex, char* str);
@@ -10,3 +12,7 @@ bool bittest(void *bitmap, uint64_t index);
 void bitset(void *bitmap, uint64_t index);
 uint64_t div_roundup(uint64_t a, uint64_t b);
 void *memcpy(void *dest, void *src, uint64_t size);
+uint64_t read_cr3();
+void invlpg(uint64_t addr);
+uint64_t align_down(uint64_t value, uint64_t alignment);
+#endif

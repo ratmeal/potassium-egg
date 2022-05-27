@@ -22,7 +22,10 @@ void page_fault()
 {
     // we dont have paging yet so we just print out the error
     serial_print("PAGE FAULT SOMEHOW\n");
-    kprintf_limine("PAGE FAULT!\n", sizeof("PAGE FAULT!\n"));
+    for (;;)
+    {
+        __asm__ volatile ("hlt");
+    }
 }
 void keyboard_interrupt()
 {

@@ -5,14 +5,14 @@ override KERNEL := photon.elf
 # It is highly recommended to use a custom built cross toolchain to build a kernel.
 # We are only using "cc" as a placeholder here. It may work by using
 # the host system's toolchain, but this is not guaranteed.
-
-CC := x86_64-elf-gcc
+# change this to the path to your cross compiler.
+CC := /home/rayan/osdev/cross/bin/x86_64-elf-gcc
 
  
 # Likewise, "ld" here is just a placeholder and your mileage may vary if using the
 # host's "ld".
 
-LD := x86_64-elf-ld
+LD := /home/rayan/osdev/cross/bin/x86_64-elf-ld
 
  
 # User controllable CFLAGS.

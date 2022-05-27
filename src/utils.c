@@ -86,3 +86,18 @@ void *memcpy(void *dest, void *src, uint64_t size)
     }
     return dest;
 }
+uint64_t read_cr3()
+{
+    uint64_t cr3;
+    __asm__ volatile ("mov %%cr3, %0" : "=r"(cr3) :: "memory");
+    return cr3;
+}
+void invlpg(uint64_t addr)
+{
+    
+    __asm__ volatile ("invlpg (%0)" :: "r"(addr) : "memory");
+}
+uint64_t align_down(uint64_t value, uint64_t alignment)
+{
+    return (value / alignment) * alignment;
+}

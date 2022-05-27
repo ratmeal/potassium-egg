@@ -1,5 +1,4 @@
 // PHOTON INTERNEL "Wave" Kernel
-// CODE PORTED FROM VINIX Copyright (C) 2021-2022 The Vinix authors.
 // Code is governed by the GPL-2.0 license.
 
 #include <stdbool.h>
