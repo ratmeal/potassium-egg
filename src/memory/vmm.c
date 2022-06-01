@@ -190,9 +190,9 @@ void vmm_init()
     uint64_t phys = kernel_address_request.response->physical_base;
     uint64_t len = 0x10000000;
     serial_print("vmm: PMRS: Mapping 0x");
-    serial_print(to_hstring(virt));
-    serial_print(" to 0x");
     serial_print(to_hstring(phys));
+    serial_print(" to 0x");
+    serial_print(to_hstring(virt));
     serial_print(", length 0x");
     serial_print(to_hstring(len));
     serial_print("\n");

@@ -44,9 +44,8 @@ void _start(void) {
     //graphics_init();
     //fill_screen(0x018281);
     // read serial
-    serial_print("moment of truth rayan\n");
     vmm_init();
-    serial_print("We Did it!\n");
+    serial_print("VMM loaded\n");
     done();
 };
 
