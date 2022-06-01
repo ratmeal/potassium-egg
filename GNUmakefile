@@ -1,14 +1,13 @@
 # This is the name that our final kernel executable will have.
 # Change as needed.
 override KERNEL := photon.elf
- 
+
 # It is highly recommended to use a custom built cross toolchain to build a kernel.
 # We are only using "cc" as a placeholder here. It may work by using
 # the host system's toolchain, but this is not guaranteed.
 # change this to the path to your cross compiler.
 CC := /home/rayan/osdev/cross/bin/x86_64-elf-gcc
-
- 
+CC_ASM := /usr/bin/nasm
 # Likewise, "ld" here is just a placeholder and your mileage may vary if using the
 # host's "ld".
 
@@ -17,7 +16,7 @@ LD := /home/rayan/osdev/cross/bin/x86_64-elf-ld
  
 # User controllable CFLAGS.
 CFLAGS ?= -O2 -g -Wall -Wextra -Wpedantic -pipe
- 
+ASMFLAGS ?= -f elf64
 # User controllable linker flags. We set none by default.
 LDFLAGS ?=
  
@@ -49,21 +48,28 @@ override INTERNALLDFLAGS :=    \
  
 # Use find to glob all *.c files in the directory and extract the object names.
 override CFILES := $(shell find ./ -type f -name '*.c')
+# get asm stub files
+override ASMSTUB := $(shell find ./ -type f -name '*.s')
 override OBJ := $(CFILES:.c=.o)
 override HEADER_DEPS := $(CFILES:.c=.d)
+override OBJ_ASM := $(ASMSTUB:.s=.o)
+override HEADER_DEPS_ASM := $(ASMSTUB:.s=.d)
  
 # Default target.
 .PHONY: all
 all: $(KERNEL)
  
 # Link rules for the final kernel executable.
-$(KERNEL): $(OBJ)
-	$(LD) $(OBJ) $(LDFLAGS) $(INTERNALLDFLAGS) -o $@
+$(KERNEL): $(OBJ) $(OBJ_ASM)
+	$(LD) $(OBJ) $(OBJ_ASM) $(LDFLAGS) $(INTERNALLDFLAGS) -o $@
  
 # Compilation rules for *.c files.
 -include $(HEADER_DEPS)
 %.o: %.c
 	$(CC) $(CFLAGS) $(INTERNALCFLAGS) -c $< -o $@
+-include $(HEADER_DEPS_ASM)
+%.o: %.s
+	$(CC_ASM) $(ASMFLAGS) -s $< -o $@
 .PHONY: everything
 everything:
 	@echo "---OS BUILD START!---"
@@ -78,12 +84,12 @@ everything:
 .PHONY: run
 run:
 	@echo "---RUNNING---"
-	@qemu-system-x86_64 image.iso -serial stdio -enable-kvm -m 3G -smp 2
+	@qemu-system-x86_64 image.iso -serial stdio -enable-kvm -m 3G -smp 2 -bios /usr/share/edk2-ovmf/x64/OVMF_CODE.fd
 	@echo "---RUNNING FINISHED---"
 .PHONY: debug_run
 debug_run:
 	@echo "---RUNNING---"
-	@qemu-system-x86_64 image.iso -serial stdio -d int -m 3G -smp 2 -no-reboot -no-shutdown -gdb tcp::1234 -singlestep
+	@qemu-system-x86_64 image.iso -serial stdio	-d int -m 3G -smp 2 -no-reboot -no-shutdown -gdb tcp::1234 -S -bios /usr/share/edk2-ovmf/x64/OVMF_CODE.fd
 	@echo "---RUNNING FINISHED---"
 # Remove object files and the final executable.
 .PHONY: clean

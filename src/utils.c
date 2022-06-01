@@ -5,36 +5,76 @@
 #include <stddef.h>
 #include <limine.h>
 #include <stdbool.h>
-// dec to string
-void dec_to_str(uint64_t dec, char* str) 
+// implmentation of to_string is borrowed from a poncho tutorial
+char uintstringoutput[128];
+const char *to_string_unsigned(uint64_t value)
 {
-    str[sizeof(str) - 1] = '\0';
-    for (int i = 18; i >= 0; i--) {
-       str[i] = dec % 10 + 48;
-       dec /= 10;
+    uint8_t size;
+    uint64_t sizetest = value;
+    while (sizetest / 10 > 0)
+    {
+        sizetest /= 10;
+        size++;
     }
-};
-// hex to string
-void hex_to_str(uint64_t hex, char* str) 
-{
-    str[sizeof(str) - 1] = '\0';
-    for (int i = 15; i >= 0; i--) {
-       str[i] = hex % 16 + 48;
-       hex /= 16;
+    uint8_t index = 0;
+    while (value / 10 > 0)
+    {
+        uint8_t remainder = value % 10;
+        value /= 10;
+        uintstringoutput[size - index] = remainder + '0';
+        index++;
     }
-};
-struct limine_terminal_request terminal_request;
-struct limine_terminal* terminal;
-void kprintf_limine(char* str, unsigned long length) 
+    uint8_t remainder = value % 10;
+    uintstringoutput[size - index] = remainder + '0';
+    uintstringoutput[size + 1] = 0;
+    return uintstringoutput;
+}
+char intstringoutput[128];
+const char *to_string(int64_t value)
 {
-    terminal_request.response->write(terminal, str, length);
-};
-// set limine terminal without optimizing
-void set_limine_terminal(struct limine_terminal_request volatile request, struct limine_terminal* volatile terminal) 
-{
-    terminal_request = request;
-    terminal = terminal;
-};
+    uint8_t neg = 0;
+    if (value < 0)
+    {
+        neg = 1;
+        value *= -1;
+        intstringoutput[0] = '-';
+    }
+    uint8_t size;
+    uint64_t sizetest = value;
+    while (sizetest / 10 > 0)
+    {
+        sizetest /= 10;
+        size++;
+    }
+    uint8_t index = 0;
+    while (value / 10 > 0)
+    {
+        uint8_t remainder = value % 10;
+        value /= 10;
+        intstringoutput[neg + size - index] = remainder + '0';
+        index++;
+    }
+    uint8_t remainder = value % 10;
+    intstringoutput[neg + size - index] = remainder + '0';
+    intstringoutput[neg + size + 1] = 0;
+    return intstringoutput;
+}
+char hexTo_StringOutput[128];
+const char* to_hstring(uint64_t value){
+    uint64_t* valPtr = &value;
+    uint8_t* ptr;
+    uint8_t tmp;
+    uint8_t size = 8 * 2 - 1;
+    for (uint8_t i = 0; i < size; i++){
+        ptr = ((uint8_t*)valPtr + i);
+        tmp = ((*ptr & 0xF0) >> 4);
+        hexTo_StringOutput[size - (i * 2 + 1)] = tmp + (tmp > 9 ? 55 : '0');
+        tmp = ((*ptr & 0x0F));
+        hexTo_StringOutput[size - (i * 2)] = tmp + (tmp > 9 ? 55 : '0');
+    }
+    hexTo_StringOutput[size + 1] = 0;
+    return hexTo_StringOutput;
+}
 // div_roundup for all types
 uint64_t div_roundup(uint64_t a, uint64_t b)
 {
@@ -44,16 +84,19 @@ uint64_t align_up(uint64_t value, uint64_t alignment)
 {
     return div_roundup(value, alignment) * alignment;
 };
-void *memset(void *dest, int c, size_t size)
+void *memset (void *dest, const uint8_t val, size_t len)
 {
-    uint8_t *destm = (uint8_t *)dest;
+  uint8_t *ptr = (uint8_t*)dest;
 
-    for (int i = 0; i < size; i++)
-    {
-        destm[i] = (uint8_t)c;
-    }
-    return dest;
+  while (len--)
+  {
+    *ptr++ = val;
+  }
+
+  return dest;
 }
+// memset function
+
 void bitreset(void *bitmap, uint64_t index)
 {
     uint64_t *fbitmap = (uint64_t)&bitmap;
@@ -76,14 +119,15 @@ void bitset(void *bitmap, uint64_t index)
     uint64_t test_index = index % bits_type;
     fbitmap[index / bits_type] |= (uint64_t)1 << test_index;
 }
-void *memcpy(void *dest, void *src, uint64_t size)
+void *memcpy (uint8_t *dest, const uint8_t *src, uint64_t len)
 {
-    uint8_t *destm = (uint8_t *)dest;
-    uint8_t *srcm = (uint8_t *)src;
-    for (int i = 0; i < size; i++)
-    {
-        destm[i] = srcm[i];
-    }
+	for (; len != 0; len--)
+	{
+		*dest = *src;
+
+		dest++;
+		src++;
+	}
     return dest;
 }
 uint64_t read_cr3()
@@ -100,4 +144,15 @@ void invlpg(uint64_t addr)
 uint64_t align_down(uint64_t value, uint64_t alignment)
 {
     return (value / alignment) * alignment;
+}
+// memcpy32
+void memcpy32(uint32_t *dest, const uint32_t *src, uint64_t len)
+{
+	for (; len != 0; len--)
+	{
+		*dest = *src;
+
+		dest++;
+		src++;
+	}
 }

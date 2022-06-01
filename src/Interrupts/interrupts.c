@@ -3,12 +3,16 @@
 
 #include <stdint.h>
 // include serial.h
-#include "serial.h"
-#include "utils.h"
+#include "../serial/serial.h"
+#include "../utils.h"
 struct idt_pointer {
     uint16_t limit;
     uint64_t base;
 } __attribute__((packed));
+extern void page_fault_asm();
+extern void divide_by_zero_asm();
+extern void bound_range_asm();
+extern void double_fault_asm();
 struct InterruptDescriptor64 {
    uint16_t offset_low;        // offset bits 0..15
    uint16_t selector;        // a code segment selector in GDT or LDT
@@ -18,25 +22,37 @@ struct InterruptDescriptor64 {
    uint32_t offset_high;        // offset bits 32..63
    uint32_t zero;            // reserved
 };
-void page_fault()
+void page_fault(uint64_t error)
 {
     // we dont have paging yet so we just print out the error
     serial_print("PAGE FAULT SOMEHOW\n");
+    serial_print("Error: ");
+    // PRINT OUT ERROR CODE HERE
+    serial_print(to_string_unsigned(error));
+    serial_print("\n");
+    serial_print("sorry about that, we'll try to continue\n");
     for (;;)
     {
         __asm__ volatile ("hlt");
     }
 }
-void keyboard_interrupt()
+void bound_range_exceeded()
 {
-    serial_print("KEYBOARD LOL");
+
 }
 void divide_error()
 {
-    serial_print("DIVIDE ERROR LOL");
-    kprintf_limine("DIVIDE ERROR!\n", sizeof("DIVIDE ERROR!\n"));
+    serial_print("DIVIDE BY ZERO\n");
 }
-
+void double_fault_handler(uint64_t zero)
+{
+    serial_print("DOUBLE FAULT\n");
+    serial_print("sorry about that\n");
+    for (;;)
+    {
+        __asm__ volatile ("hlt");
+    }
+}
 // wha
 // add interrupt descriptor to idt
 void add_idt_entry(uint8_t interrupt, void *handler, uint16_t selector, uint8_t flags, struct InterruptDescriptor64 idt[256])
@@ -54,10 +70,12 @@ void init_idt(void)
     // idt
     struct InterruptDescriptor64 idt[256];
     // setup interrupts
-    add_idt_entry(0, &divide_error, 0x28, 0x8E, idt);
-    add_idt_entry(0x21, &keyboard_interrupt, 0x28, 0x8E, idt);
+    add_idt_entry(0x0, &divide_by_zero_asm, 0x28, 0x8E, idt);
     // add page fault expection
-    add_idt_entry(0x0E, &page_fault, 0x28, 0x8E, idt);
+    add_idt_entry(0x0E, &page_fault_asm, 0x28, 0x8E, idt);
+    // double fault
+    add_idt_entry(0x08, &double_fault_asm, 0x28, 0x8E, idt);
+    add_idt_entry(0x05, &bound_range_asm, 0x28, 0x8E, idt);
     // idt pointer
     struct idt_pointer idtp = {
         .limit = sizeof(idt) - 1,

@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include "../utils.h"
 #define PORT 0x3f8          // COM1
 // make a outb function
 // TODO: move this outa serial lol
@@ -46,10 +47,10 @@ void write_serial(char a) {
 int serial_received() {
    return inb(PORT + 5) & 1;
 }
- 
+// delete character from serial output
+
 char read_serial() {
    while (serial_received() == 0);
- 
    return inb(PORT);
 }
 void serial_print(char *str) {
@@ -57,3 +58,4 @@ void serial_print(char *str) {
       write_serial(*str++);
    };
 };
+

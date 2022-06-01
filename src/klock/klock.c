@@ -3,8 +3,8 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "serial.h"
-#include "utils.h"
+#include "../serial/serial.h"
+#include "../utils.h"
 #include <stdatomic.h>
 struct lock
 {
@@ -49,8 +49,7 @@ void acquire(struct lock *l)
     };
     serial_print("lock acquire failed\n");
     serial_print("caller: ");
-    char str[20];
-    hex_to_str(caller, str);
-    serial_print(str);
+    serial_print(to_string_unsigned(caller));
+    serial_print("\n");
     serial_print("this is a deadlock, we gonna fault bro r u n\n");
 };
