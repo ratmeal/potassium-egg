@@ -1,4 +1,5 @@
 // PHOTON INTERNEL "Wave" Kernel
+// Slab Allocator is ported from VINIX (Copyright (C) 2021-2022, The VINIX Project)
 // Code is governed by the GPL-2.0 license.
 #include <stddef.h>
 #include <stdint.h>
@@ -7,6 +8,7 @@
 #include "../serial/serial.h"
 #include "../../limine.h"
 #include "../utils.h"
+
 extern struct limine_memmap_request memmap_request;
 extern struct limine_hhdm_request hhdm_request;
 struct lock *pmm_lock;

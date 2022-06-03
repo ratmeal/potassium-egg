@@ -9,12 +9,14 @@
 #include "../../limine.h"
 #include "../utils.h"
 #include "pmm.h"
+#include "../Graphics/graphics.h"
 static bool vmm_init_ = false;
 const uint64_t pte_present = (uint64_t)1 << 0;
 const uint64_t pte_writable = (uint64_t)1 << 1;
 const uint64_t pte_user = (uint64_t)1 << 2;
 uint64_t page_size = (uint64_t)0x1000;
 uint64_t higher_half = (uint64_t)0xffff800000000000;
+
 struct PageMap
 {
     struct lock l;
@@ -41,6 +43,7 @@ struct PageMap *new_pagemap()
     }
     return (struct PageMap*)top_level;
 }
+
 uint64_t *get_next_level(uint64_t *current_level, uint64_t index, bool allocate)
 {
     uint64_t *ret = (uint64_t*)0;
@@ -189,11 +192,13 @@ void vmm_init()
     uint64_t virt = kernel_address_request.response->virtual_base;
     uint64_t phys = kernel_address_request.response->physical_base;
     uint64_t len = 0x10000000;
-    serial_print("vmm: PMRS: Mapping 0x");
+    serial_print("vmm: Mapping Kernel Physical Address 0x");
+    put_string(0, 64, "[vmm_init()] Mapping Kernel Physical Address to Kernel Virtual Address", 0xFFFFFF);
     serial_print(to_hstring(phys));
     serial_print(" to 0x");
     serial_print(to_hstring(virt));
-    serial_print(", length 0x");
+    serial_print(" Virtual Address");
+    serial_print("\nLength: 0x");
     serial_print(to_hstring(len));
     serial_print("\n");
     for (uint64_t j = (uint64_t)0; j < len; j += page_size)
@@ -223,6 +228,7 @@ void vmm_init()
             map_page(&kernel_pagemap, j + higher_half, j, 0x03);
         }
     }
+    put_string(0, 80, "[vmm_init()] Switching to Kernel Page Map", 0xFFFFFF);
     switch_to(&kernel_pagemap);
     volatile vmm_init_ = true;
 }

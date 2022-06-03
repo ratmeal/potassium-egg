@@ -75,6 +75,8 @@ const char* to_hstring(uint64_t value){
     hexTo_StringOutput[size + 1] = 0;
     return hexTo_StringOutput;
 }
+
+
 // div_roundup for all types
 uint64_t div_roundup(uint64_t a, uint64_t b)
 {
