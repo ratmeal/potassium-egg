@@ -134,7 +134,7 @@ void flag_page(struct PageMap *pagemap, uint64_t virt, uint64_t flags)
 }
 void map_page(struct PageMap *pagemap, uint64_t virt, uint64_t phys, uint64_t flags)
 {
-    acquire(&pagemap->l);
+    acquire(pagemap->l);
     uint64_t pml4_entry = (virt & ((uint64_t)0x1ff << 39)) >> 39;
     uint64_t pml3_entry = (virt & ((uint64_t)0x1ff << 30)) >> 30;
     uint64_t pml2_entry = (virt & ((uint64_t)0x1ff << 21)) >> 21;
@@ -157,12 +157,13 @@ void map_page(struct PageMap *pagemap, uint64_t virt, uint64_t phys, uint64_t fl
     }
     uint64_t *entry = (uint64_t*)((uint64_t)pml1 + higher_half + pml1_entry * 8);
     entry[0] = phys | flags;
-    release(&pagemap->l);
+    release(pagemap->l);
 }
 void vmm_init()
 {
     if (vmm_init_ == true)
     {
+        serial_print("vmm_init() already called\n");
         return;
     }
     
@@ -201,6 +202,7 @@ void vmm_init()
     serial_print("\nLength: 0x");
     serial_print(to_hstring(len));
     serial_print("\n");
+    
     for (uint64_t j = (uint64_t)0; j < len; j += page_size)
     {
         map_page(&kernel_pagemap, virt + j, phys + j, 0x03);

@@ -6,28 +6,43 @@
 #include <limine.h>
 #include <stdbool.h>
 // implmentation of to_string is borrowed from a poncho tutorial
-char uintstringoutput[128];
-const char *to_string_unsigned(uint64_t value)
+// strcmp function
+// memmove function
+// memcmp function
+int memcmp(const void *s1, const void *s2, size_t n)
 {
-    uint8_t size;
-    uint64_t sizetest = value;
-    while (sizetest / 10 > 0)
+    const uint8_t *p1 = s1;
+    const uint8_t *p2 = s2;
+    for (size_t i = 0; i < n; i++)
     {
-        sizetest /= 10;
-        size++;
+        if (p1[i] != p2[i])
+        {
+            return p1[i] - p2[i];
+        }
     }
-    uint8_t index = 0;
-    while (value / 10 > 0)
+    return 0;
+}
+void *memmove(void *dest, const void *src, size_t n)
+{
+    char *d = dest;
+    const char *s = src;
+    if (d <= s)
     {
-        uint8_t remainder = value % 10;
-        value /= 10;
-        uintstringoutput[size - index] = remainder + '0';
-        index++;
+        while (n--)
+        {
+            *d++ = *s++;
+        }
     }
-    uint8_t remainder = value % 10;
-    uintstringoutput[size - index] = remainder + '0';
-    uintstringoutput[size + 1] = 0;
-    return uintstringoutput;
+    else
+    {
+        d += n;
+        s += n;
+        while (n--)
+        {
+            *--d = *--s;
+        }
+    }
+    return dest;
 }
 char intstringoutput[128];
 const char *to_string(int64_t value)
@@ -121,15 +136,14 @@ void bitset(void *bitmap, uint64_t index)
     uint64_t test_index = index % bits_type;
     fbitmap[index / bits_type] |= (uint64_t)1 << test_index;
 }
-void *memcpy (uint8_t *dest, const uint8_t *src, uint64_t len)
+void *memcpy(void *dest, void *src, uint64_t size)
 {
-	for (; len != 0; len--)
-	{
-		*dest = *src;
-
-		dest++;
-		src++;
-	}
+    uint8_t *destm = (uint8_t*)dest;
+    uint8_t *srcm = (uint8_t*)src;
+    for (uint64_t i = 0; i < size; i++)
+    {
+        destm[i] = srcm[i];
+    }
     return dest;
 }
 uint64_t read_cr3()

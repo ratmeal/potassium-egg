@@ -21,6 +21,7 @@ static void done(void) {
     }
 };
 static uint64_t last_frame_color = 0x000000;
+extern void PrepareACPI();
 // The following will be our kernel's entry point.
 void _start(void) {
     if (init_serial() != 0) {
@@ -37,7 +38,7 @@ void _start(void) {
     serial_print("IDT loaded\n");
     
     pmm_init();
-    put_string(0, 0, "[KERNEL] GDT Loaded!", 0xFFFFFF);
+    
     put_string(0, 16, "[KERNEL] IDT Loaded!", 0xFFFFFF);
     serial_print("PMM loaded\n");
     put_string(0, 32, "[KERNEL] PMM Loaded!", 0xFFFFFF);
@@ -46,12 +47,20 @@ void _start(void) {
     //kpanic("don don", sizeof("don don"));
     //graphics_init();
     //fill_screen(0x018281);
-    // read serial
+    // read serial;
     vmm_init();
+    put_string(0, 0, "[KERNEL] GDT Loaded!", 0xFFFFFF);
     serial_print("VMM loaded\n");
     put_string(0, 96, "[KERNEL] VMM Loaded!", 0xFFFFFF);
     put_string(0, 112, "[KERNEL] Starting Fallback Serial Command Line...", 0xFFFFFF);
-    command_line_system();
+    
+    uint64_t a = available_memory();
+    serial_print("Available Memory: ");
+    
+    serial_print(to_string(a));
+    serial_print(" bytes\n");
+    PrepareACPI();
+    //command_line_system();
     done();
 };
 

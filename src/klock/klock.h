@@ -9,7 +9,7 @@ struct lock
     uint64_t caller;
 };
 
-void acquire(struct lock *l);
-bool test_and_acquire(struct lock *l);
-void release(struct lock *l);
+void acquire(struct lock l);
+bool test_and_acquire(struct lock l);
+void release(struct lock l);
 #endif

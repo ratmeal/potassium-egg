@@ -73,7 +73,7 @@ void page_fault(struct cpu_state_error *cpu)
     serial_print("PAGE FAULT SOMEHOW\n");
     serial_print("Error: ");
     // PRINT OUT ERROR CODE HERE
-    serial_print(to_string_unsigned(cpu->error));
+    serial_print(to_string(cpu->error));
     serial_print("\n");
     serial_print("sorry about that, we'll try to continue\n");
     for (;;)

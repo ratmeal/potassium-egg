@@ -1,18 +1,8 @@
 #include <stdint.h>
 #include "../utils.h"
+#include "../Drivers/Communcation/data.h"
 #define PORT 0x3f8          // COM1
 // make a outb function
-// TODO: move this outa serial lol
-void outb(uint16_t port, uint8_t data) {
-    __asm__ volatile ("outb %1, %0" : : "dN" (port), "a" (data));
-}
-// make a inb function
-uint8_t inb(uint16_t port) {
-    uint8_t ret;
-    __asm__ volatile ("inb %1, %0" : "=a" (ret) : "dN" (port));
-    return ret;
-}
-
 int init_serial() {
    outb(PORT + 1, 0x00);    // Disable all interrupts
    outb(PORT + 3, 0x80);    // Enable DLAB (set baud rate divisor)

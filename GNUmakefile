@@ -84,12 +84,12 @@ everything:
 .PHONY: run
 run:
 	@echo "---RUNNING---"
-	@qemu-system-x86_64 image.iso -serial stdio -enable-kvm -m 3G -smp 2 -bios /usr/share/edk2-ovmf/x64/OVMF_CODE.fd
+	@qemu-system-x86_64 image.iso -serial stdio -enable-kvm -m 3G -smp 2 -bios /usr/share/edk2-ovmf/x64/OVMF_CODE.fd -machine q35
 	@echo "---RUNNING FINISHED---"
 .PHONY: debug_run
 debug_run:
 	@echo "---RUNNING---"
-	@qemu-system-x86_64 image.iso -serial stdio	-d int -m 3G -smp 2 -no-reboot -no-shutdown -gdb tcp::1234 -S -bios /usr/share/edk2-ovmf/x64/OVMF_CODE.fd
+	@qemu-system-x86_64 image.iso -serial stdio	-d int -m 3G -smp 2 -no-reboot -no-shutdown -gdb tcp::1234 -S -bios /usr/share/edk2-ovmf/x64/OVMF_CODE.fd -machine q35
 	@echo "---RUNNING FINISHED---"
 # Remove object files and the final executable.
 .PHONY: clean
