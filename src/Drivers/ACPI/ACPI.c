@@ -40,6 +40,18 @@ struct XSDT {
     struct ACPISDTHeader h;
     uint64_t pointers[];
 } __attribute__ ((packed));
+// This function just checks the checksum of an ACPI table
+bool doChecksum(struct ACPISDTHeader *tableHeader)
+{
+    unsigned char sum = 0;
+ 
+    for (int i = 0; i < tableHeader->Length; i++)
+    {
+        sum += ((char *) tableHeader)[i];
+    }
+ 
+    return sum == 0;
+}
 void PrepareACPI()
 {
     // detect if rsdp is acpi 1 or 2
@@ -63,18 +75,22 @@ void PrepareACPI()
         {
             // get entry from pointer array as a ACPISDTHeader struct
             struct ACPISDTHeader *entry = (struct ACPISDTHeader*)xsdt->pointers[i];
-            serial_print("Entry: ");
             
-            // copy the signature 4 bytes to a temp buffer and stick a null terminator at the end
-            char sigma[4];
-            memcpy(sigma, entry->Signature, 4);
-            sigma[4] = '\0';
-            serial_print(sigma);
-            serial_print("\n");
+            // using strncmp to compare the signature
+            // like this: strncmp(entry->Signature, "APIC", 3);
+            // it's 3 instead of 4 because there's some weird 4th byte (has to do with it not being null terminated idk)
+            // in the signature
+            // Comparring it with 4 bytes gives undefined behavior
+            if (strncmp(entry->Signature, "FACP", 3) == 0)
+            {
+                serial_print("Found FACP\n");
+                
+            }
+
         }
     }
     else
     {
-        serial_print("what\n");
+        serial_print("go back to the 90's kid\n");
     }
 }
