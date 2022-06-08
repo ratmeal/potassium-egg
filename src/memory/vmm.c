@@ -41,7 +41,9 @@ struct PageMap *new_pagemap()
     {
         p1[i] = p2[i];
     }
-    return (struct PageMap*)top_level;
+    struct PageMap *pa;
+    pa->top_level = top_level;
+    return pa;
 }
 
 uint64_t *get_next_level(uint64_t *current_level, uint64_t index, bool allocate)
@@ -194,7 +196,6 @@ void vmm_init()
     uint64_t phys = kernel_address_request.response->physical_base;
     uint64_t len = 0x10000000;
     serial_print("vmm: Mapping Kernel Physical Address 0x");
-    put_string(0, 64, "[vmm_init()] Mapping Kernel Physical Address to Kernel Virtual Address", 0xFFFFFF);
     serial_print(to_hstring(phys));
     serial_print(" to 0x");
     serial_print(to_hstring(virt));
@@ -230,7 +231,6 @@ void vmm_init()
             map_page(&kernel_pagemap, j + higher_half, j, 0x03);
         }
     }
-    put_string(0, 80, "[vmm_init()] Switching to Kernel Page Map", 0xFFFFFF);
     switch_to(&kernel_pagemap);
     volatile vmm_init_ = true;
 }

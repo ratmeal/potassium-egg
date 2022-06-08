@@ -143,10 +143,6 @@ void *pmm_alloc(uint64_t size, bool zeroed)
                 free_pages++;
                 
             }
-            else
-            {
-                
-            }
         }
         if (free_pages == size)
         {
@@ -191,10 +187,10 @@ void slab_init(struct Slab *slab, uint64_t ent_size)
     slab->ent_size = ent_size;
     slab->first_free = (uint64_t)pmm_alloc(1, false);
     slab->first_free += higher_half;
-    uint64_t avl_size = page_size - align_up(sizeof(struct SlabHeader), slab->ent_size);
+    uint64_t avl_size = page_size - align_up(sizeof(struct SlabHeader), ent_size);
     struct SlabHeader *slabptr = (struct SlabHeader*)slab->first_free;
     slabptr[0].slab = slab;
-    slab->first_free += align_up(sizeof(struct SlabHeader), slab->ent_size);
+    slab->first_free += align_up(sizeof(struct SlabHeader), ent_size);
     uint64_t *arr = (uint64_t*)slab->first_free;
     uint64_t max = avl_size / ent_size - 1;
     uint64_t fact = ent_size / 8;
@@ -204,17 +200,17 @@ void slab_init(struct Slab *slab, uint64_t ent_size)
     }
     arr[max * fact] = (uint64_t)0;
 }
-void *slab_alloc(struct Slab slab)
+void *slab_alloc(struct Slab *slab)
 {
-    acquire(slab.l);
-    if (slab.first_free == 0)
+    acquire(slab->l);
+    if (slab->first_free == 0)
     {
-        slab_init(&slab, slab.ent_size);
+        slab_init(&slab, slab->ent_size);
     }
-    uint64_t *old_free = (uint64_t*)slab.first_free;
-    slab.first_free = old_free[0];
-    memset((void*)old_free, 0, slab.ent_size);
-    release(slab.l);
+    uint64_t *old_free = (uint64_t*)slab->first_free;
+    slab->first_free = old_free[0];
+    memset((void*)old_free, 0, slab->ent_size);
+    release(slab->l);
     return (void*)old_free;
 }
 void slab_sfree(struct Slab *slab, void *ptr)
@@ -233,7 +229,7 @@ void slab_sfree(struct Slab *slab, void *ptr)
 void big_free(void *ptr)
 {
     struct MallocMetadata *metadata = (uint64_t)ptr - page_size;
-    pmm_free((void*)(uint64_t)metadata - higher_half, metadata->pages + 1);
+    pmm_free((void*)((uint64_t)metadata - higher_half), metadata->pages + 1);
 }
 // Make this function also in the header file
 void free(void *ptr)
@@ -251,16 +247,19 @@ void free(void *ptr)
     slab_sfree(slab_hdr->slab, ptr);
 }
 
-struct Slab slab_for(uint64_t size)
+struct Slab *slab_for(uint64_t size)
 {
-    for (int i = 0; i < slabs; i++)
+    struct Slab *ptr = slabs;
+    for (int i = 0; i < 10; i++, ptr++)
     {
-        if (slabs[i].ent_size >= size)
+        if (ptr->ent_size >= size)
         {
-            return slabs[i];
+            return ptr;
         }
     }
-    return;
+    struct Slab *pa;
+    pa->ent_size = 0;
+    return pa;
 }
 void *big_alloc(uint64_t size)
 {
@@ -270,7 +269,7 @@ void *big_alloc(uint64_t size)
     {
         return 0;
     }
-    struct MallocMetadata *metadata = (uint64_t)ptr - higher_half;
+    struct MallocMetadata *metadata = (uint64_t)ptr + higher_half;
     metadata->pages = page_count;
     metadata->size = size;
     return (void*)(uint64_t)ptr + higher_half + page_size;
@@ -278,8 +277,9 @@ void *big_alloc(uint64_t size)
 // Make this function also in the header file
 void *malloc(uint64_t size)
 {
-    struct Slab slab = slab_for(8 + size);
-    if (slab.ent_size == 0)
+    struct Slab *slab = slab_for(8 + size);
+    serial_print("Malloc called\n"); // dummy line otherwise page write fault, dunno why
+    if (slab->ent_size == 0)
     {
         return big_alloc(size);
     }

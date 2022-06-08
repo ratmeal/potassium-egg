@@ -37,7 +37,8 @@ override INTERNALCFLAGS :=   \
 	-mno-red-zone        \
 	-mcmodel=kernel      \
 	-MMD				 \
-	-w 					 
+	-w 					 \
+	-Isrc/Implementations/lai/laisub/include/ # include for lai
  
 # Internal linker flags that should not be changed by the user.
 override INTERNALLDFLAGS :=    \

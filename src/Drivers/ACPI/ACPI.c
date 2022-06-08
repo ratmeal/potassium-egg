@@ -2,10 +2,15 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "../../serial/serial.h"
-#include "../../utils.h"
 #include <limine.h>
 #include "../../Graphics/graphics.h"
 #include "../../klibc/string.h"
+#include <lai/core.h>
+#include <lai/helpers/sci.h>
+#include <lai/helpers/pm.h>
+#include <lai/drivers/ec.h>
+#include <lai/helpers/pc-bios.h>
+#include "../../kpanic/panic.h"
 extern struct limine_rsdp_request rsdp_request;
 struct ACPISDTHeader {
   char Signature[4];
@@ -35,6 +40,8 @@ struct RSDPDescriptor20 {
  uint8_t ExtendedChecksum;
  uint8_t reserved[3];
 } __attribute__ ((packed));
+struct XSDT *xsdt;
+bool isXSDT = false;
 // XSDT struct with SDT Header and pointers to other SDT
 struct XSDT {
     struct ACPISDTHeader h;
@@ -62,35 +69,56 @@ void PrepareACPI()
     // get the rsdp address
     uint64_t rsdp_address = rsdp_request.response->address; 
     // get the rsdp
-    struct RSDPDescriptor20 *rsdp = (struct RSDPDescriptor20*)rsdp_address;
+    struct RSDPDescriptor *rsdpol = (struct RSDPDescriptor*)rsdp_address;
     // get the revision
-    uint8_t revision = rsdp->firstPart.Revision;
+    uint8_t revision = rsdpol->Revision;
+    
     if (revision >= 2)
     {
-        struct XSDT *xsdt = (struct XSDT*)rsdp->XsdtAddress;
-        // give the pointer to other sdt a size
+        struct RSDPDescriptor20 *rsdp = (struct RSDPDescriptor20*)rsdp_address;
+        isXSDT = true;
+        xsdt = (struct XSDT*)rsdp->XsdtAddress;
+        serial_print("XSDT detected\n");
+        // DEBUG:
         
+        lai_enable_tracing(LAI_TRACE_OP);
+        lai_set_acpi_revision(xsdt->h.Revision);
+        //lai_create_namespace(); // this will kpanic safely 
+        //lai_enable_acpi(1);
+        //lai_create_namespace(); // can't do this until scanning acpi tables is implemented
+        // give the pointer to other sdt a size
         // We Do XSDT
-        for (int i = 0; i < ((xsdt->h.Length - sizeof(struct ACPISDTHeader)) / 8); i++)
-        {
-            // get entry from pointer array as a ACPISDTHeader struct
-            struct ACPISDTHeader *entry = (struct ACPISDTHeader*)xsdt->pointers[i];
+        // for (int i = 0; i < ((xsdt->h.Length - sizeof(struct ACPISDTHeader)) / 8); i++)
+        // {
+        //     // get entry from pointer array as a ACPISDTHeader struct
+        //     struct ACPISDTHeader *entry = (struct ACPISDTHeader*)xsdt->pointers[i];
             
-            // using strncmp to compare the signature
-            // like this: strncmp(entry->Signature, "APIC", 3);
-            // it's 3 instead of 4 because there's some weird 4th byte (has to do with it not being null terminated idk)
-            // in the signature
-            // Comparring it with 4 bytes gives undefined behavior
-            if (strncmp(entry->Signature, "FACP", 3) == 0)
-            {
-                serial_print("Found FACP\n");
+        //     // using strncmp to compare the signature
+        //     // like this: strncmp(entry->Signature, "APIC", 3);
+        //     // it's 3 instead of 4 because there's some weird 4th byte (has to do with it not being null terminated idk)
+        //     // in the signature
+        //     // Comparring it with 4 bytes gives undefined behavior
+        //     if (strncmp(entry->Signature, "FACP", 3) == 0)
+        //     {
+        //         serial_print("Found FACP\n");
                 
-            }
+        //     }
 
-        }
+        // }
     }
     else
     {
+        isXSDT = false;
         serial_print("go back to the 90's kid\n");
+        serial_print("no your not getting it\n");
+        
+        // panic here ig
+        kpanic("ACPI_REVISION_1_NOT_SUPPORTED");
     }
+}
+
+// generic get table function
+void *GetTable(char* signature)
+{
+    
 }
