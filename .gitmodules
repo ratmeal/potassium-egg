@@ -1,0 +1,3 @@
+[submodule "src/Implementations/lai/laisub"]
+	path = src/Implementations/lai/laisub
+	url = https://github.com/managarm/lai
