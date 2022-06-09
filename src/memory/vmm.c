@@ -43,6 +43,7 @@ struct PageMap *new_pagemap()
     }
     struct PageMap *pa;
     pa->top_level = top_level;
+    
     return pa;
 }
 

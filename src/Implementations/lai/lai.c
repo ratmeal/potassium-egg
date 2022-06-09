@@ -3,9 +3,10 @@
 #include <stdint.h>
 #include "../../memory/vmm.h"
 #include "../../serial/serial.h"
-#include "../../memory/pmm.h"
+#include "../../memory/heap.h"
 #include "../../Drivers/Communcation/data.h"
 #include "../../kpanic/panic.h"
+#include "../../Drivers/ACPI/ACPI.h"
 extern const char* to_hstring(uint64_t value);
 // Functions for lai
 /* Maps count bytes from the given physical address and returns
@@ -66,16 +67,7 @@ uint32_t laihost_ind(uint16_t port)
    or NULL when no such table was found. */
 void *laihost_scan(char *sig, size_t index)
 {
-    serial_print("ACPI: Requested Table Signature: ");
-    serial_print(sig);
-    serial_print("\n");
-    serial_print("ACPI: Requested Table Index: ");
-    serial_print(to_hstring(index));
-    serial_print("\n");
-    serial_print("WARNING: This function is a STUB and does not work.\n");
-    serial_print("Time to kpanic!\n");
-    // panic
-    kpanic("LAI_HOST_SCAN_ERROR\n");
+    return GetTable(sig, index);
 }
 void laihost_panic(const char *msg)
 {

@@ -45,14 +45,14 @@ void _start(void) {
     //fill_screen(0x018281);
     // read serial;
     vmm_init();
-    graphics_init();
+    //graphics_init();
     
     uint64_t a = available_memory();
     serial_print("Available Memory: ");
     
     serial_print(to_hstring(a));
     serial_print(" bytes\n");
-    put_string(0, 0, "Good Morning sir!", 0xFFFFFF);
+    //put_string(0, 0, "Good Morning sir!", 0xFFFFFF);
     
     //PrepareACPI();
     done();

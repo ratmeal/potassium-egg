@@ -5,7 +5,7 @@
 #include "../../limine.h"
 #include "../utils.h"
 #include "fonts/linux_font_8x16.h"
-#include "../memory/pmm.h"
+#include "../memory/heap.h"
 extern struct limine_framebuffer_request framebuffer_request;
 uint32_t *backbuffer;
 
