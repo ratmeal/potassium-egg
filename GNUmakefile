@@ -82,6 +82,11 @@ everything:
 	@echo "---STAGE2 COMPLETE---"
 	@echo "OS BUILT WITH NO ERRORS!"
 	@echo "---OS BUILD COMPLETE---"
+.PHONY: upsubs
+upsubs:
+	@echo "Updating Github SubModules..."
+	@git submodule foreach git pull origin master
+	@echo "SubModules Updated!"
 .PHONY: run
 run:
 	@echo "---RUNNING---"

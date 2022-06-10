@@ -111,13 +111,10 @@ void *pmm_alloc(uint64_t size, bool zeroed)
                 free_pages++;
                 
             }
-            else
-            {
-                break;
-            }
         }
         if (free_pages == size)
         {
+            
             // set the bitmap to 1
             for (int j = 0; j < size; j++)
             {

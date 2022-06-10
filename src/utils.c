@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <limine.h>
 #include <stdbool.h>
+#include "serial/serial.h"
 // implmentation of to_string is borrowed from a poncho tutorial
 // strcmp function
 // memmove function
@@ -103,8 +104,9 @@ uint64_t align_up(uint64_t value, uint64_t alignment)
 };
 void *memset (void *dest, const uint8_t val, size_t len)
 {
+    
   uint8_t *ptr = (uint8_t*)dest;
-
+  
   while (len--)
   {
     *ptr++ = val;

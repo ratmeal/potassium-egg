@@ -7,7 +7,7 @@ make -C limine
 echo "Making ISO_ROOT..."
 mkdir -p iso_root
 echo "Copying Kernel Files..."
-cp -v photon.elf limine.cfg ok.bmp limine/limine.sys \
+cp -v photon.elf limine.cfg no.tga limine/limine.sys \
       limine/limine-cd.bin limine/limine-cd-efi.bin iso_root/
 echo "Creating a bootable ISO..."
 # Create the bootable ISO.
