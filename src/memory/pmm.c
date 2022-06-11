@@ -12,6 +12,9 @@ extern struct limine_memmap_request memmap_request;
 extern struct limine_hhdm_request hhdm_request;
 struct lock pmm_lock;
 uint8_t *bitmap;
+
+
+uint64_t bitmap_size;
 static bool pmm_init_ = false;
 uint64_t total_pages_global;
 uint64_t free_pages_global = 0;
@@ -43,7 +46,9 @@ void pmm_init()
         }
         // calculate the last entries last page
     }
-    uint64_t bitmap_size = (highest_page_usable / page_size) / 8;
+    bitmap_size = (highest_page_usable / page_size) / 8;
+    serial_print(to_hstring(bitmap_size));
+    serial_print("\n");
     uint64_t bitmap_size_aligned = align_up(bitmap_size, page_size);
     uint64_t bitmap_base;
     for (int i = 0; i < memmap_request.response->entry_count; i++)
@@ -55,6 +60,8 @@ void pmm_init()
                bitmap_base = memmap_request.response->entries[i]->base + hhdm_request.response->offset;
                memmap_request.response->entries[i]->base += bitmap_size_aligned;
                memmap_request.response->entries[i]->length -= bitmap_size_aligned;
+               // make it unusable
+                memmap_request.response->entries[i]->type = LIMINE_MEMMAP_RESERVED;
                break;
             }
         }
@@ -63,33 +70,20 @@ void pmm_init()
     // make a pointer using the base of the bitmap
     bitmap = (uint8_t*)(bitmap_base);
     // set the bitmap to 0
-    memset(bitmap, 0, bitmap_size_aligned);
+    memset(bitmap, 1, bitmap_size_aligned);
     for (int i = 0; i < memmap_request.response->entry_count; i++)
     {
-        if (memmap_request.response->entries[i]->type == LIMINE_MEMMAP_USABLE)
+        if (memmap_request.response->entries[i]->type )
+        total_pages_global += memmap_request.response->entries[i]->length / page_size;
+        if (memmap_request.response->entries[i]->type != LIMINE_MEMMAP_USABLE)
         {
-            // loop through each page in the entry
-            for (uint64_t j = 0; j < memmap_request.response->entries[i]->length; j += page_size)
-            {
-                // get the index for the bitmap
-                uint64_t index = j / page_size;
-                
-                bitmap[index] = 0;
-                free_pages_global++;
-                total_pages_global++;
-            }
+            continue;
         }
-        else
+        free_pages_global += memmap_request.response->entries[i]->length / page_size;
+        for (uint64_t j = 0; j < memmap_request.response->entries[i]->length; j += page_size)
         {
-            // loop through each page in the entry
-            for (uint64_t j = 0; j < memmap_request.response->entries[i]->length; j += page_size)
-            {
-                // get the index for the bitmap
-                uint64_t index = j / page_size;
-                
-                bitmap[index] = 1;
-                total_pages_global++;
-            }
+            //bitreset(bitmap, (memmap_request.response->entries[i]->base + j) / page_size);
+            bitmap[(memmap_request.response->entries[i]->base + j) / page_size] = 0;
         }
     }
     serial_print("PMM has finished Initializing!\n");
@@ -100,7 +94,7 @@ void pmm_init()
 void *pmm_alloc(uint64_t size, bool zeroed)
 {
     acquire(pmm_lock);
-    for (int i = 0; i < bitmap; i++)
+    for (int i = 0; i < bitmap_size; i++)
     {
         // find a amount of pages that are free
         uint64_t free_pages = 0;
@@ -109,7 +103,6 @@ void *pmm_alloc(uint64_t size, bool zeroed)
             if (bitmap[i + j] == 0)
             {
                 free_pages++;
-                
             }
         }
         if (free_pages == size)
@@ -127,12 +120,11 @@ void *pmm_alloc(uint64_t size, bool zeroed)
             // return the pointer
             if (zeroed)
             {
-                memset((void*)(i * page_size), 0, size * page_size);
+                memset((void*)((i * page_size) + hhdm_request.response->offset), 0, size * page_size);
             }
             release(pmm_lock);
             return (void*)(i * page_size);
         }
-        
     }
     release(pmm_lock);
     return NULL;

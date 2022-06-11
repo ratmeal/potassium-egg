@@ -10,6 +10,7 @@
 #include "../utils.h"
 #include "pmm.h"
 #include "../Graphics/graphics.h"
+extern struct limine_hhdm_request hhdm_request;
 static bool vmm_init_ = false;
 const uint64_t pte_present = (uint64_t)1 << 0;
 const uint64_t pte_writable = (uint64_t)1 << 1;
@@ -178,6 +179,7 @@ void vmm_init()
     serial_print(to_hstring(kernel_address_request.response->virtual_base));
     serial_print("\n");
     
+    // keep a direct map
     kernel_pagemap.top_level = pmm_alloc(1, true);
     if (kernel_pagemap.top_level == 0)
     {

@@ -48,9 +48,16 @@ void _start(void) {
     //graphics_init();
     
     uint64_t a = available_memory();
+    uint64_t b = total_memory();
     serial_print("Available Memory: ");
     
     serial_print(to_hstring(a));
+    serial_print(" bytes\n");
+    serial_print("Used Memory: ");
+    serial_print(to_hstring(b - a));
+    serial_print(" bytes\n");
+    serial_print("Total Memory: ");
+    serial_print(to_hstring(b));
     serial_print(" bytes\n");
     //put_string(0, 0, "Good Morning sir!", 0xFFFFFF);
     
