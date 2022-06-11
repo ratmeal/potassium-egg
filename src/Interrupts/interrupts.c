@@ -76,6 +76,12 @@ void page_fault(struct cpu_state_error *cpu)
     serial_print(to_string(cpu->error));
     serial_print("\n");
     serial_print("sorry about that, we'll try to continue\n");
+    // if we are in userspace we'd kill the process
+    // if we are in kernel space we'd panic
+    // to get the faulting address you must read cr2 which is the register that holds the faulting address
+    // cr2 is not used for anything else
+    // cr0 contains control flags you can set
+    // https://en.wikipedia.org/wiki/Control_register
     for (;;)
     {
         __asm__ volatile ("hlt");

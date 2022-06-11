@@ -24,12 +24,8 @@ static uint64_t last_frame_color = 0x000000;
 extern void PrepareACPI();
 // The following will be our kernel's entry point.
 void _start(void) {
-    if (init_serial() != 0) {
-        done();
-    }
-    else {
-        serial_print("Hello World!\n");
-    };
+    init_serial() != 0 ? done() : serial_print("Hello World!\n");
+    
     // We should now be able to call the Limine terminal to print out
     // a simple "Hello World" to screen.
     uint64_t gdt = init_gdt();
@@ -59,6 +55,7 @@ void _start(void) {
     serial_print("Total Memory: ");
     serial_print(to_hstring(b));
     serial_print(" bytes\n");
+
     //put_string(0, 0, "Good Morning sir!", 0xFFFFFF);
     
     //PrepareACPI();

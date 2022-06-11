@@ -47,8 +47,6 @@ void pmm_init()
         // calculate the last entries last page
     }
     bitmap_size = (highest_page_usable / page_size) / 8;
-    serial_print(to_hstring(bitmap_size));
-    serial_print("\n");
     uint64_t bitmap_size_aligned = align_up(bitmap_size, page_size);
     uint64_t bitmap_base;
     for (int i = 0; i < memmap_request.response->entry_count; i++)
@@ -73,8 +71,10 @@ void pmm_init()
     memset(bitmap, 1, bitmap_size_aligned);
     for (int i = 0; i < memmap_request.response->entry_count; i++)
     {
-        if (memmap_request.response->entries[i]->type )
-        total_pages_global += memmap_request.response->entries[i]->length / page_size;
+        if (memmap_request.response->entries[i]->type != LIMINE_MEMMAP_ACPI_NVS && memmap_request.response->entries[i]->type != LIMINE_MEMMAP_ACPI_RECLAIMABLE && memmap_request.response->entries[i]->type != LIMINE_MEMMAP_FRAMEBUFFER)
+        {
+            total_pages_global += memmap_request.response->entries[i]->length / page_size;
+        }
         if (memmap_request.response->entries[i]->type != LIMINE_MEMMAP_USABLE)
         {
             continue;
