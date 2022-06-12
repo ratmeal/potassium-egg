@@ -15,6 +15,8 @@
 // be made volatile or equivalent.
 // extern void fill_screen(uint64_t color);
 // extern void graphics_init();
+extern struct limine_kernel_file_request kernel_file_request;
+extern struct limine_terminal_request terminal_request;
 static void done(void) {
     for (;;) {
         __asm__("hlt");
@@ -55,7 +57,10 @@ void _start(void) {
     serial_print("Total Memory: ");
     serial_print(to_hstring(b));
     serial_print(" bytes\n");
-
+    serial_print("Kernel ARGS: ");
+    serial_print(kernel_file_request.response->kernel_file->cmdline);
+    serial_print("\n");
+    terminal_request.response->write(terminal_request.response->terminals[0], "no limine?\n", 12);
     //put_string(0, 0, "Good Morning sir!", 0xFFFFFF);
     
     //PrepareACPI();
