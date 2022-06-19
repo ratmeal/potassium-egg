@@ -36,8 +36,8 @@ struct PageMap *new_pagemap()
         serial_print("kpanic!\n");
     }
     // Import higher half from kernel pagemap
-    uint64_t *p1 = (uint64_t*)((uint64_t)top_level + higher_half);
-    uint64_t *p2 = (uint64_t*)((uint64_t)kernel_pagemap.top_level + higher_half);
+    uint64_t *p1 = (uint64_t*)((uint64_t)top_level + hhdm_request.response->offset);
+    uint64_t *p2 = (uint64_t*)((uint64_t)kernel_pagemap.top_level + hhdm_request.response->offset);
     for (uint64_t i = 256; i < 512; i++)
     {
         p1[i] = p2[i];
@@ -51,7 +51,7 @@ struct PageMap *new_pagemap()
 uint64_t *get_next_level(uint64_t *current_level, uint64_t index, bool allocate)
 {
     uint64_t *ret = (uint64_t*)0;
-    uint64_t *entry = (uint64_t*)((uint64_t)current_level + higher_half + index * 8);
+    uint64_t *entry = (uint64_t*)((uint64_t)current_level + hhdm_request.response->offset + index * 8);
     if (entry[0] & 0x01 != 0)
     {
         ret = (uint64_t*)(entry[0] & ~(uint64_t)0xfff);
@@ -94,7 +94,7 @@ uint64_t *virt2pte(struct PageMap *pagemap, uint64_t virt, bool allocate)
     {
         return NULL;
     }
-    return (uint64_t*)((uint64_t)&pml1[pml1_entry] + higher_half);
+    return (uint64_t*)((uint64_t)&pml1[pml1_entry] + hhdm_request.response->offset);
 }
 uint64_t virt2phys(struct PageMap *pagemap, uint64_t virt)
 {
@@ -138,7 +138,7 @@ void flag_page(struct PageMap *pagemap, uint64_t virt, uint64_t flags)
 }
 void map_page(struct PageMap *pagemap, uint64_t virt, uint64_t phys, uint64_t flags)
 {
-    acquire(pagemap->l);
+    acquire(&pagemap->l);
     uint64_t pml4_entry = (virt & ((uint64_t)0x1ff << 39)) >> 39;
     uint64_t pml3_entry = (virt & ((uint64_t)0x1ff << 30)) >> 30;
     uint64_t pml2_entry = (virt & ((uint64_t)0x1ff << 21)) >> 21;
@@ -147,21 +147,24 @@ void map_page(struct PageMap *pagemap, uint64_t virt, uint64_t phys, uint64_t fl
     uint64_t *pml3 = get_next_level(pml4, pml4_entry, true);
     if (pml3 == 0)
     {
+        release(&pagemap->l);
         return NULL;
     }
     uint64_t *pml2 = get_next_level(pml3, pml3_entry, true);
     if (pml2 == 0)
     {
+        release(&pagemap->l);
         return NULL;
     }
     uint64_t *pml1 = get_next_level(pml2, pml2_entry, true);
     if (pml1 == 0)
     {
+        release(&pagemap->l);
         return NULL;
     }
-    uint64_t *entry = (uint64_t*)((uint64_t)pml1 + higher_half + pml1_entry * 8);
+    uint64_t *entry = (uint64_t*)((uint64_t)pml1 + hhdm_request.response->offset + pml1_entry * 8);
     entry[0] = phys | flags;
-    release(pagemap->l);
+    release(&pagemap->l);
 }
 void vmm_init()
 {
@@ -214,7 +217,7 @@ void vmm_init()
     for (uint64_t i = (uint64_t)0x1000; i < 0x100000000; i += page_size)
     {
         map_page(&kernel_pagemap, i, i, 0x03);
-        map_page(&kernel_pagemap, i + higher_half, i, 0x03);
+        map_page(&kernel_pagemap, i + hhdm_request.response->offset, i, 0x03);
     }
     for (int i = 0; i < memmap_request.response->entry_count; i++)
     {
@@ -231,7 +234,7 @@ void vmm_init()
                 continue;
             }
             map_page(&kernel_pagemap, j, j, 0x03);
-            map_page(&kernel_pagemap, j + higher_half, j, 0x03);
+            map_page(&kernel_pagemap, j + hhdm_request.response->offset, j, 0x03);
         }
     }
     switch_to(&kernel_pagemap);

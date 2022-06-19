@@ -12,34 +12,34 @@ struct lock
     uint64_t caller;
 };
 
-void release(struct lock l)
+void release(struct lock *l)
 {
     // Stolen Brutal Code lmao
     // Idk how long this might last but good enough for now 
     atomic_thread_fence(memory_order_seq_cst);
-    l.locked = false;
+    atomic_store(&l->locked, false);
 }
-bool test_and_acquire(struct lock l)
+bool test_and_acquire(struct lock *l)
 {
     bool expected = false;
     uint64_t caller = (uint64_t)__builtin_return_address(0);
     
-    bool ret = atomic_compare_exchange_strong(&l.locked, &expected, true);
+    bool ret = atomic_compare_exchange_strong(&l->locked, &expected, true);
 
     // test without
 
     atomic_thread_fence(memory_order_seq_cst);
     if (ret == true)
     {
-        l.caller = caller;
+        l->caller = caller;
     }
     return ret;
 }
-void acquire(struct lock l) 
+void acquire(struct lock *l) 
 {
-    if (l.locked == true)
+    if (l->locked == true)
     {
-        serial_print("what...\n");
+        serial_print("wtf\n");
     }
     __asm__ volatile ("cli");
     uint64_t caller = (uint64_t)__builtin_return_address(0);
@@ -47,7 +47,7 @@ void acquire(struct lock l)
     {
         if (test_and_acquire(l) == true) 
         {
-            l.caller = caller;
+            l->caller = caller;
             __asm__ volatile ("sti");
             return;
         };

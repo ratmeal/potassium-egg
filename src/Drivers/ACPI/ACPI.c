@@ -50,9 +50,11 @@ void PrepareACPI()
         serial_print("XSDT detected\n");
         // DEBUG:
         
-        lai_enable_tracing(LAI_TRACE_OP);
+        lai_enable_tracing(LAI_TRACE_NS);
         lai_set_acpi_revision(xsdt->header.revision);
+        
         lai_create_namespace(); // this will kpanic safely 
+        serial_print("lai worked....\n");
         //lai_enable_acpi(1);
         //lai_create_namespace(); // can't do this until scanning acpi tables is implemented
         // give the pointer to other sdt a size

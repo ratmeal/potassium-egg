@@ -7,13 +7,15 @@
 #include "../../Drivers/Communcation/data.h"
 #include "../../kpanic/panic.h"
 #include "../../Drivers/ACPI/ACPI.h"
+#include <limine.h>
 extern const char* to_hstring(uint64_t value);
+extern struct limine_hhdm_request hhdm_request;
 // Functions for lai
 /* Maps count bytes from the given physical address and returns
    a virtual address that can be used to access the memory. */
 void *laihost_map(size_t address, size_t count) {
   // note: `count` is unused since we currently know that it does not go beyond the mapped range.
-  return (void*)(address + higher_half);
+  return (void*)(address + hhdm_request.response->offset);
 }
 void laihost_unmap(void *pointer, uint64_t count)
 {
@@ -26,6 +28,7 @@ void laihost_log(int level, const char *msg)
 {
     serial_print("lai: ");
     serial_print(msg);
+    serial_print("\n");
 }
 void *laihost_malloc(size_t size)
 {
@@ -33,7 +36,7 @@ void *laihost_malloc(size_t size)
 }
 void *laihost_realloc(void *oldptr, size_t newsize, size_t oldsize)
 {
-    return realloc(oldptr, newsize);
+    return realloc(oldptr, newsize, oldsize);
 }
 void laihost_free(void *ptr, size_t size)
 {

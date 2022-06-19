@@ -104,6 +104,10 @@ void divide_error(struct cpu_state *cpu)
         serial_print("no your from kernel mode\n");
         // panic here
     }
+    for (;;)
+    {
+        __asm__ volatile ("hlt");
+    }
 }
 void double_fault_handler(struct cpu_state_error *cpu)
 {

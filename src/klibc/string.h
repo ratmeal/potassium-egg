@@ -21,6 +21,7 @@ int strncmp(char *s, char *t, size_t n);
 // [7.24.5] Search functions
 
 char *strstr(const char *s, const char *t);
+char *strtok(char *s, char *delim);
 
 // [7.24.6] Miscellaneous functions
 
