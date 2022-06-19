@@ -79,7 +79,7 @@ void heap_init()
 }
 void *malloc(uint64_t size)
 {
-    if (size % page_size == 0)
+    if (size % page_size == 0 || size >= 8192)
     {
         return pmm_alloc((size / page_size), true);
     }

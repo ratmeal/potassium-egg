@@ -26,6 +26,7 @@ static void done(void) {
 };
 extern void PrepareACPI();
 extern void init(char* args);
+extern void test_blit();
 // The following will be our kernel's entry point.
 void _start(void) {
     init_serial() != 0 ? done() : serial_print("Hello World!\n");
@@ -70,5 +71,6 @@ void _start(void) {
     terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;32m*\e[0;37m] [WAVE] Graphics: [\e[0;32mOK\e[0;37m]\n", 55);
     PrepareACPI();
     terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;32m*\e[0;37m] [WAVE] ACPI via LAI: [\e[0;32mOK\e[0;37m]\n", 59);
+    test_blit();
     done();
 };
