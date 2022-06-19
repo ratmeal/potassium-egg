@@ -40,7 +40,7 @@ void slab_init(uint64_t size)
     else
     {
         cur_slab = slabs;
-        while (slabs->next)
+        while (cur_slab->next)
         {
             cur_slab = cur_slab->next;
         }
@@ -67,6 +67,15 @@ void slab_init(uint64_t size)
 void heap_init()
 {
     slab_init(8);
+    slab_init(16);
+    slab_init(24);
+    slab_init(32);
+    slab_init(48);
+    slab_init(64);
+    slab_init(128);
+    slab_init(256);
+    slab_init(512);
+    slab_init(1024);
 }
 void *malloc(uint64_t size)
 {
@@ -83,7 +92,7 @@ void *malloc(uint64_t size)
         acquire(&cur_slab->l);
         while (cur_slab)
         {
-            if (cur_slab->obj_size == size)
+            if (cur_slab->obj_size >= size)
             {
                 for (uint64_t i = 0; i < cur_slab->obj_size; i++)
                 {

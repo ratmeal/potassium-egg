@@ -63,9 +63,12 @@ void _start(void) {
     serial_print(kernel_file_request.response->kernel_file->cmdline);
     serial_print("\n");
     init(kernel_file_request.response->kernel_file->cmdline);
-    terminal_request.response->write(terminal_request.response->terminals[0], "Hello World!\n", 14);
-    //put_string(0, 0, "Good Morning sir!", 0xFFFFFF);
+    terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;32m*\e[0;37m] [WAVE] Core Systems: [\e[0;32mOK\e[0;37m]\n", 59);
+    heap_init();
+    terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;32m*\e[0;37m] [WAVE] HEAP: [\e[0;32mOK\e[0;37m]\n", 51);
+    graphics_init();
+    terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;32m*\e[0;37m] [WAVE] Graphics: [\e[0;32mOK\e[0;37m]\n", 55);
     PrepareACPI();
-    serial_print("f my life\n");
+    terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;32m*\e[0;37m] [WAVE] ACPI via LAI: [\e[0;32mOK\e[0;37m]\n", 59);
     done();
 };
