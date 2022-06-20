@@ -70,12 +70,13 @@ struct cpu_state {
 void page_fault(struct cpu_state_error *cpu)
 {
     // we dont have paging yet so we just print out the error
-    serial_print("PAGE FAULT SOMEHOW\n");
-    serial_print("Error: ");
+    serial_print("alright so don't be upset and relax for 2 seconds but\n");
+    serial_print("you got a page fault don't worry about it though\n");
+    serial_print("your error code was: ");
     // PRINT OUT ERROR CODE HERE
     serial_print(to_string(cpu->error));
     serial_print("\n");
-    serial_print("sorry about that, we'll try to continue\n");
+    serial_print("once again relax and know you'll fix it don't let this stress you\n");
     // if we are in userspace we'd kill the process
     // if we are in kernel space we'd panic
     // to get the faulting address you must read cr2 which is the register that holds the faulting address

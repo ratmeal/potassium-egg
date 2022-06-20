@@ -8,6 +8,7 @@ void *memset(void *dest, int c, uint64_t size);
 uint64_t div_roundup(uint64_t a, uint64_t b);
 void *memcpy(void *dest, void *src, uint64_t size);
 uint64_t read_cr3();
+uint64_t read_cr2();
 void invlpg(uint64_t addr);
 uint64_t align_down(uint64_t value, uint64_t alignment);
 void *memcpy32(void *dest, void *src, uint64_t size);

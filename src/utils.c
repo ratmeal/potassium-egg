@@ -131,6 +131,12 @@ uint64_t read_cr3()
     __asm__ volatile ("mov %%cr3, %0" : "=r"(cr3) :: "memory");
     return cr3;
 }
+uint64_t read_cr2()
+{
+    uint64_t cr2;
+    __asm__ volatile ("mov %%cr2, %0" : "=r"(cr2) :: "memory");
+    return cr2;
+}
 void invlpg(uint64_t addr)
 {
     

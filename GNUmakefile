@@ -90,7 +90,7 @@ upsubs:
 .PHONY: run
 run:
 	@echo "---RUNNING---"
-	@qemu-system-x86_64 image.iso -serial stdio -enable-kvm -m 3G -smp 2 -bios /usr/share/edk2-ovmf/x64/OVMF_CODE.fd -machine q35
+	@qemu-system-x86_64 image.iso -serial stdio -enable-kvm -m 3G -smp 2 -bios /usr/share/edk2-ovmf/x64/OVMF_CODE.fd -machine q35 -soundhw pcspk
 	@echo "---RUNNING FINISHED---"
 .PHONY: debug_run
 debug_run:

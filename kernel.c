@@ -11,6 +11,11 @@
 #include "src/memory/vmm.h"
 #include "src/Graphics/graphics.h"
 #include "src/memory/heap.h"
+#include "src/KS/ARGS/args.h"
+#include "src/Drivers/ACPI/ACPI.h"
+#include "src/Drivers/Communcation/data.h"
+#include "src/kpanic/panic.h"
+#include "src/Quantum/Window/Window.h"
 // The Limine requests can be placed anywhere, but it is important that
 // the compiler does not optimise them away, so, usually, they should
 // be made volatile or equivalent.
@@ -24,9 +29,7 @@ static void done(void) {
         __asm__("hlt");
     }
 };
-extern void PrepareACPI();
-extern void init(char* args);
-extern void test_blit();
+
 // The following will be our kernel's entry point.
 void _start(void) {
     init_serial() != 0 ? done() : serial_print("Hello World!\n");
@@ -64,13 +67,15 @@ void _start(void) {
     serial_print(kernel_file_request.response->kernel_file->cmdline);
     serial_print("\n");
     init(kernel_file_request.response->kernel_file->cmdline);
-    terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;32m*\e[0;37m] [WAVE] Core Systems: [\e[0;32mOK\e[0;37m]\n", 59);
+    terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;32m*\e[0;37m] [\e[0;36mWAVE\e[0;37m] Core Systems: [\e[0;32mOK\e[0;37m]\n", 73);
     heap_init();
-    terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;32m*\e[0;37m] [WAVE] HEAP: [\e[0;32mOK\e[0;37m]\n", 51);
+    terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;32m*\e[0;37m] [\e[0;36mWAVE\e[0;37m] HEAP: [\e[0;32mOK\e[0;37m]\n", 65);
     graphics_init();
-    terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;32m*\e[0;37m] [WAVE] Graphics: [\e[0;32mOK\e[0;37m]\n", 55);
+    terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;32m*\e[0;37m] [\e[0;36mWAVE\e[0;37m] Graphics: [\e[0;32mOK\e[0;37m]\n", 69);
     PrepareACPI();
-    terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;32m*\e[0;37m] [WAVE] ACPI via LAI: [\e[0;32mOK\e[0;37m]\n", 59);
-    test_blit();
+    terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;32m*\e[0;37m] [\e[0;36mWAVE\e[0;37m] ACPI via LAI: [\e[0;32mOK\e[0;37m]\n", 73);
+    terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;34m*\e[0;37m] [\e[0;36mWAVE\e[0;37m] Dropping to Kernel GUI (QUANTUM)\n", 76);
+    struct Window *window = init_window("Quantum", 0, 0, 500, 500);
+    draw_window(window);
     done();
 };

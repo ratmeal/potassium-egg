@@ -8,15 +8,14 @@
 #include "../memory/heap.h"
 extern struct limine_framebuffer_request framebuffer_request;
 uint32_t *backbuffer;
-uint32_t backbuffer_pitch;
+uint16_t backbuffer_pitch;
 
 
-
-void draw_pixel(uint64_t x, uint64_t y, uint64_t color)
+void draw_pixel(uint64_t x, uint64_t y, uint64_t color, uint32_t *buffer, uint32_t pitch)
 {
-    backbuffer[y * (backbuffer_pitch/ sizeof(uint32_t)) + x] = color;
-    
-    // *((uint32_t*)(framebuffer_request.response->framebuffers[0]->address + 4 * (framebuffer_request.response->framebuffers[0]->pitch / 4) * y + 4 * x)) = color;
+    if (x >= pitch || y >= pitch)
+        return;
+    buffer[y * pitch + x] = color;
 }
 
 void fill_screen(uint64_t color)
@@ -30,7 +29,7 @@ void fill_screen(uint64_t color)
     {
         for (uint64_t y = 0; y < height; y++)
         {
-            draw_pixel(x, y, color);
+            backbuffer[y * (backbuffer_pitch) + x] = color;
             
         }
     }
@@ -44,7 +43,7 @@ void draw_rect(uint64_t x, uint64_t y, uint64_t width, uint64_t height, uint64_t
     {
         for (uint64_t j = 0; j < height; j++)
         {
-            draw_pixel(x + i, y + j, color);
+            backbuffer[(y + j) * (backbuffer_pitch) + (x + i)] = color;
         }
     }
     swap_buffers();
@@ -65,8 +64,8 @@ void swap_buffers()
     memcpy32((uint32_t*)framebuffer_request.response->framebuffers[0]->address, backbuffer, framebuffer_request.response->framebuffers[0]->height * backbuffer_pitch);
 
 }
-// blit function
-void blit(uint64_t x, uint64_t y, uint64_t width, uint64_t height, size_t *src_buffer, uint32_t src_pitch, size_t *dst_buffer, uint32_t dst_pitch)
+
+void blit(uint64_t x, uint64_t y, uint64_t width, uint64_t height, uint32_t *src_buffer, uint32_t src_pitch, uint32_t *dst_buffer, uint32_t dst_pitch)
 {
     for (uint64_t i = 0; i < width; i++)
     {
@@ -85,7 +84,7 @@ void draw_char(uint64_t x, uint64_t y, char c, uint64_t color)
         {
             if ((font[(c * 16) + i] & (0x80 >> j)) != 0)
             {
-                draw_pixel(x + j, y + i, color);
+                draw_pixel(x + j, y + i, color, backbuffer, backbuffer_pitch);
             }
         }
     }
@@ -106,29 +105,13 @@ void put_string(uint64_t x, uint64_t y, char* str, uint64_t color)
     }
     swap_buffers();
 }
-void draw_image_raw(uint64_t x, uint64_t y, uint64_t width, uint64_t height, uint32_t* data)
+void draw_image_raw(uint64_t x, uint64_t y, uint64_t width, uint64_t height, uint32_t* data, uint32_t *buffer, uint32_t pitch)
 {
     for (uint64_t i = 0; i < width; i++)
     {
         for (uint64_t j = 0; j < height; j++)
         {
-            draw_pixel(x + i, y + j, data[j * width + i]);
+            draw_pixel(x + i, y + j, data[j * width + i], buffer, pitch);
         }
     }
-    swap_buffers();
-}
-void test_blit()
-{
-    size_t* src_buffer = malloc(500 * 500 * sizeof(size_t));
-
-    // draw a rectangle in the source buffer
-    for (uint64_t i = 0; i < 500; i++)
-    {
-        for (uint64_t j = 0; j < 500; j++)
-        {
-            src_buffer[j * 500 + i] = 0xFF0000FF;
-        }
-    }
-    blit(0, 0, 500, 500, src_buffer, 500, backbuffer, backbuffer_pitch / 4);
-    swap_buffers();
 }
