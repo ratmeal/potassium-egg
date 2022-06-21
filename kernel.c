@@ -75,7 +75,8 @@ void _start(void) {
     PrepareACPI();
     terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;32m*\e[0;37m] [\e[0;36mWAVE\e[0;37m] ACPI via LAI: [\e[0;32mOK\e[0;37m]\n", 73);
     terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;34m*\e[0;37m] [\e[0;36mWAVE\e[0;37m] Dropping to Kernel GUI (QUANTUM)\n", 76);
-    struct Window *window = init_window("Quantum", 0, 0, 500, 500);
+    struct Window *window = init_window("Quantum Window", 50, 50, 200, 200);
+    
     draw_window(window);
     done();
 };
