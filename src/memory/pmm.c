@@ -16,7 +16,7 @@ uint8_t *bitmap;
 
 uint64_t bitmap_size;
 static bool pmm_init_ = false;
-uint64_t total_pages_global;
+uint64_t total_pages_global = 0;
 uint64_t free_pages_global = 0;
 
 void pmm_init()
@@ -58,8 +58,7 @@ void pmm_init()
                bitmap_base = memmap_request.response->entries[i]->base + hhdm_request.response->offset;
                memmap_request.response->entries[i]->base += bitmap_size_aligned;
                memmap_request.response->entries[i]->length -= bitmap_size_aligned;
-               // make it unusable
-                memmap_request.response->entries[i]->type = LIMINE_MEMMAP_RESERVED;
+               
                break;
             }
         }
