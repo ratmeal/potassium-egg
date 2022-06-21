@@ -8,14 +8,14 @@
 #include "../memory/heap.h"
 extern struct limine_framebuffer_request framebuffer_request;
 uint32_t *backbuffer;
-uint16_t backbuffer_pitch;
+uint32_t backbuffer_pitch;
 
 
 void draw_pixel(uint64_t x, uint64_t y, uint64_t color, uint32_t *buffer, uint32_t pitch)
 {
     if (x >= pitch || y >= pitch)
         return;
-    buffer[y * pitch + x] = color;
+    buffer[y * (pitch / sizeof(uint32_t)) + x] = color;
 }
 
 void fill_screen(uint64_t color)
@@ -29,7 +29,7 @@ void fill_screen(uint64_t color)
     {
         for (uint64_t y = 0; y < height; y++)
         {
-            backbuffer[y * (backbuffer_pitch) + x] = color;
+            backbuffer[y * (backbuffer_pitch / sizeof(uint32_t)) + x] = color;
             
         }
     }
@@ -43,7 +43,7 @@ void draw_rect(uint64_t x, uint64_t y, uint64_t width, uint64_t height, uint64_t
     {
         for (uint64_t j = 0; j < height; j++)
         {
-            backbuffer[(y + j) * (backbuffer_pitch) + (x + i)] = color;
+            backbuffer[(y + j) * (backbuffer_pitch / sizeof(uint32_t)) + (x + i)] = color;
         }
     }
     swap_buffers();
@@ -71,7 +71,7 @@ void blit(uint64_t x, uint64_t y, uint64_t width, uint64_t height, uint32_t *src
     {
         for (uint64_t j = 0; j < height; j++)
         {
-            dst_buffer[(j + y) * dst_pitch + (i + x)] = src_buffer[j * src_pitch + i];
+            dst_buffer[(j + y) * (dst_pitch / sizeof(uint32_t)) + (i + x)] = src_buffer[j * (src_pitch / sizeof(uint32_t)) + i];
         }
     }
 }
