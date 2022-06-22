@@ -31,7 +31,7 @@ void draw_window(struct Window *window)
         }
     }
     put_string(window->pos_x, window->pos_y, "hi", 0xFFFFFFFF, window->fb.buffer, window->fb.width);
-    blit(window->pos_x, window->pos_y, window->fb.width, window->fb.height, window->fb.buffer, window->fb.pitch, Backbuffer.buffer, Backbuffer.pitch);
+    blit(window->pos_x, window->pos_y, window->fb.width, window->fb.height, window->fb.buffer, window->fb.width, Backbuffer.buffer, Backbuffer.width);
     swap_buffers();
     
 }

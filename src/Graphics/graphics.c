@@ -34,19 +34,19 @@ void swap_buffers()
 
 }
 
-void blit(uint64_t x, uint64_t y, uint64_t width, uint64_t height, uint32_t *src_buffer, uint32_t src_pitch, uint32_t *dst_buffer, uint32_t dst_pitch)
+void blit(uint64_t x, uint64_t y, uint64_t width, uint64_t height, uint32_t *src_buffer, uint64_t src_width, uint32_t *dst_buffer, uint64_t dst_width)
 {
     for (uint64_t i = 0; i < height; i++)
     {
         for (uint64_t j = 0; j < width; j++)
         {
-            dst_buffer[(y + i) * (dst_pitch) + (x + j)] = src_buffer[i * (src_pitch) + j];
+            dst_buffer[(y + i) * (dst_width) + (x + j)] = src_buffer[i * (src_width) + j];
         }
     }
 }
-void draw_char(uint64_t x, uint64_t y, char c, uint64_t color, uint32_t* buffer, uint32_t pitch)
+void draw_char(uint64_t x, uint64_t y, char c, uint64_t color, uint32_t* buffer, uint64_t width)
 {
-    if (x >= pitch || y >= pitch)
+    if (x >= width || y >= width)
         return;
     unsigned char* font = (unsigned char*)fontdata_8x16.data;
     for (uint64_t i = 0; i < 16; i++)
@@ -55,14 +55,14 @@ void draw_char(uint64_t x, uint64_t y, char c, uint64_t color, uint32_t* buffer,
         {
             if ((font[(c * 16) + i] & (0x80 >> j)) != 0)
             {
-               buffer[(i + y) * pitch + (j + x)] = color;
+               buffer[(i + y) * width + (j + x)] = color;
             }
         }
     }
 }
 
 
-void put_string(uint64_t x, uint64_t y, char* str, uint64_t color, uint32_t* buffer, uint32_t pitch)
+void put_string(uint64_t x, uint64_t y, char* str, uint64_t color, uint32_t* buffer, uint64_t width)
 {
     int len;
     len = strlen(str);
@@ -72,6 +72,6 @@ void put_string(uint64_t x, uint64_t y, char* str, uint64_t color, uint32_t* buf
         {
             continue;   
         }
-        draw_char(x + (i * 8), y, str[i], color, buffer, pitch);
+        draw_char(x + (i * 8), y, str[i], color, buffer, width);
     }
 }
