@@ -75,8 +75,10 @@ void blit(uint64_t x, uint64_t y, uint64_t width, uint64_t height, uint32_t *src
         }
     }
 }
-void draw_char(uint64_t x, uint64_t y, char c, uint64_t color)
+void draw_char(uint64_t x, uint64_t y, char c, uint64_t color, uint32_t* buffer, uint32_t pitch)
 {
+    if (x >= pitch || y >= pitch)
+        return;
     unsigned char* font = (unsigned char*)fontdata_8x16.data;
     for (uint64_t i = 0; i < 16; i++)
     {
@@ -84,26 +86,25 @@ void draw_char(uint64_t x, uint64_t y, char c, uint64_t color)
         {
             if ((font[(c * 16) + i] & (0x80 >> j)) != 0)
             {
-                draw_pixel(x + j, y + i, color, backbuffer, backbuffer_pitch);
+               buffer[(i + y) * (pitch / sizeof(uint32_t)) + (j + x)] = color;
             }
         }
     }
 }
 
 
-void put_string(uint64_t x, uint64_t y, char* str, uint64_t color)
+void put_string(uint64_t x, uint64_t y, char* str, uint64_t color, uint32_t* buffer, uint32_t pitch)
 {
     int len;
-    for (len = 0; str[len] != '\0'; len++);
+    len = strlen(str);
     for (uint64_t i = 0; i < len; i++)
     {
         if (str[i] == '\n')
         {
             continue;   
         }
-        draw_char(x + (i * 8), y, str[i], color);
+        draw_char(x + (i * 8), y, str[i], color, buffer, pitch);
     }
-    swap_buffers();
 }
 void draw_image_raw(uint64_t x, uint64_t y, uint64_t width, uint64_t height, uint32_t* data, uint32_t *buffer, uint32_t pitch)
 {
