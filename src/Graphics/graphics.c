@@ -6,72 +6,41 @@
 #include "../utils.h"
 #include "fonts/linux_font_8x16.h"
 #include "../memory/heap.h"
+#include "../memory/pmm.h"
+#include "graphics.h"
 extern struct limine_framebuffer_request framebuffer_request;
-uint32_t *backbuffer;
-uint32_t backbuffer_pitch;
+struct GBuffer Backbuffer;
 
 
-void draw_pixel(uint64_t x, uint64_t y, uint64_t color, uint32_t *buffer, uint32_t pitch)
+void graphics_init(int screen)
 {
-    if (x >= pitch || y >= pitch)
-        return;
-    buffer[y * (pitch / sizeof(uint32_t)) + x] = color;
-}
-
-void fill_screen(uint64_t color)
-{
-    // get the height and width of the framebuffer
-    uint64_t width = framebuffer_request.response->framebuffers[0]->width;
-    uint64_t height = framebuffer_request.response->framebuffers[0]->height;
-    
-    // draw a big rectangle covering the whole screen
-    for (uint64_t x = 0; x < width; x++)
-    {
-        for (uint64_t y = 0; y < height; y++)
-        {
-            backbuffer[y * (backbuffer_pitch / sizeof(uint32_t)) + x] = color;
-            
-        }
-    }
-    swap_buffers();
-}
-
-void draw_rect(uint64_t x, uint64_t y, uint64_t width, uint64_t height, uint64_t color)
-{
-    // draw a rectangle
-    for (uint64_t i = 0; i < width; i++)
-    {
-        for (uint64_t j = 0; j < height; j++)
-        {
-            backbuffer[(y + j) * (backbuffer_pitch / sizeof(uint32_t)) + (x + i)] = color;
-        }
-    }
-    swap_buffers();
-}
-void graphics_init()
-{
-    backbuffer_pitch = framebuffer_request.response->framebuffers[0]->pitch;
-    backbuffer = (uint32_t*)malloc(framebuffer_request.response->framebuffers[0]->height * backbuffer_pitch);
-    //serial_print("no page fault\n");
+    struct limine_framebuffer *framebuffer = framebuffer_request.response->framebuffers[screen];
+    Backbuffer.width = framebuffer->width;
+    Backbuffer.height = framebuffer->height;
+    Backbuffer.pitch = framebuffer->pitch; // you have to divide by sizeof(uint32_t)
+    Backbuffer.buffer = malloc(Backbuffer.height * (Backbuffer.pitch / sizeof(uint32_t)));
     flush_backbuffer();
+    swap_buffers();
 }
+
+
 void flush_backbuffer()
 {
-    memset(backbuffer, 0, framebuffer_request.response->framebuffers[0]->width * backbuffer_pitch);
+    memset(Backbuffer.buffer, 0, framebuffer_request.response->framebuffers[0]->width * (Backbuffer.pitch / sizeof(uint32_t)));
 }
 void swap_buffers()
 {
-    memcpy32((uint32_t*)framebuffer_request.response->framebuffers[0]->address, backbuffer, framebuffer_request.response->framebuffers[0]->height * backbuffer_pitch);
+    memcpy32((uint32_t*)framebuffer_request.response->framebuffers[0]->address, Backbuffer.buffer, framebuffer_request.response->framebuffers[0]->height * (Backbuffer.pitch / sizeof(uint32_t)));
 
 }
 
 void blit(uint64_t x, uint64_t y, uint64_t width, uint64_t height, uint32_t *src_buffer, uint32_t src_pitch, uint32_t *dst_buffer, uint32_t dst_pitch)
 {
-    for (uint64_t i = 0; i < width; i++)
+    for (uint64_t i = 0; i < height; i++)
     {
-        for (uint64_t j = 0; j < height; j++)
+        for (uint64_t j = 0; j < width; j++)
         {
-            dst_buffer[(j + y) * (dst_pitch / sizeof(uint32_t)) + (i + x)] = src_buffer[j * (src_pitch / sizeof(uint32_t)) + i];
+            dst_buffer[(y + i) * (dst_pitch) + (x + j)] = src_buffer[i * (src_pitch) + j];
         }
     }
 }
@@ -86,7 +55,7 @@ void draw_char(uint64_t x, uint64_t y, char c, uint64_t color, uint32_t* buffer,
         {
             if ((font[(c * 16) + i] & (0x80 >> j)) != 0)
             {
-               buffer[(i + y) * (pitch / sizeof(uint32_t)) + (j + x)] = color;
+               buffer[(i + y) * pitch + (j + x)] = color;
             }
         }
     }
@@ -104,15 +73,5 @@ void put_string(uint64_t x, uint64_t y, char* str, uint64_t color, uint32_t* buf
             continue;   
         }
         draw_char(x + (i * 8), y, str[i], color, buffer, pitch);
-    }
-}
-void draw_image_raw(uint64_t x, uint64_t y, uint64_t width, uint64_t height, uint32_t* data, uint32_t *buffer, uint32_t pitch)
-{
-    for (uint64_t i = 0; i < width; i++)
-    {
-        for (uint64_t j = 0; j < height; j++)
-        {
-            draw_pixel(x + i, y + j, data[j * width + i], buffer, pitch);
-        }
     }
 }

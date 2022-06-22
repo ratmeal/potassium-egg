@@ -42,6 +42,7 @@ void acquire(struct lock *l)
         serial_print("wtf\n");
     }
     __asm__ volatile ("cli");
+    // 'return address' shut up
     uint64_t caller = (uint64_t)__builtin_return_address(0);
     for (uint64_t i; i < (uint64_t)50000000; i++)
     {

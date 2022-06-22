@@ -148,5 +148,6 @@ void init_idt(void)
         .base = (uint64_t)idt
     };
     // load
+    // I hope I don't wake up the next time I sleep
     __asm__ volatile ("lidt %0" :: "m" (idtp));
 };

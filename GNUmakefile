@@ -23,7 +23,7 @@ LDFLAGS ?=
 # Internal C flags that should not be changed by the user.
 override INTERNALCFLAGS :=   \
 	-I.                  \
-	-std=c11             \
+	-std=c2x             \
 	-ffreestanding       \
 	-fno-stack-protector \
 	-fno-stack-check     \
@@ -38,7 +38,8 @@ override INTERNALCFLAGS :=   \
 	-mcmodel=kernel      \
 	-MMD				 \
 	-w 					 \
-	-Isrc/Implementations/lai/laisub/include/ # include for lai
+	-Isrc/Implementations/lai/laisub/include/ \
+	-O2
  
 # Internal linker flags that should not be changed by the user.
 override INTERNALLDFLAGS :=    \

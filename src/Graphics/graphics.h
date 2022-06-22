@@ -1,10 +1,10 @@
 #ifndef GRAPHICS.h
 #define GRAPHICS.h
 #include <stdbool.h>
-extern uint32_t *backbuffer;
-extern uint32_t backbuffer_pitch;
+
 void swap_buffers();
-void graphics_init();
+void graphics_init(int screen);
+void flush_backbuffer();
 void draw_pixel(uint64_t x, uint64_t y, uint64_t color, uint32_t *buffer, uint32_t pitch);
 void fill_screen(uint64_t color);
 void draw_rect(uint64_t x, uint64_t y, uint64_t width, uint64_t height, uint64_t color);
@@ -17,4 +17,5 @@ struct GBuffer
     uint64_t width;
     uint64_t height;
 };
+extern struct GBuffer Backbuffer;
 #endif

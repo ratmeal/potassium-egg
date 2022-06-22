@@ -31,6 +31,7 @@ static void done(void) {
 };
 
 // The following will be our kernel's entry point.
+// NOTE: I should kill myself because my kernel will never be as good as all the other hobby projects
 void _start(void) {
     init_serial() != 0 ? done() : serial_print("Hello World!\n");
     
@@ -70,12 +71,14 @@ void _start(void) {
     terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;32m*\e[0;37m] [\e[0;36mWAVE\e[0;37m] Core Systems: [\e[0;32mOK\e[0;37m]\n", 73);
     heap_init();
     terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;32m*\e[0;37m] [\e[0;36mWAVE\e[0;37m] HEAP: [\e[0;32mOK\e[0;37m]\n", 65);
-    graphics_init();
+    graphics_init(0);
     terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;32m*\e[0;37m] [\e[0;36mWAVE\e[0;37m] Graphics: [\e[0;32mOK\e[0;37m]\n", 69);
-    PrepareACPI();
-    terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;32m*\e[0;37m] [\e[0;36mWAVE\e[0;37m] ACPI via LAI: [\e[0;32mOK\e[0;37m]\n", 73);
-    terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;34m*\e[0;37m] [\e[0;36mWAVE\e[0;37m] Dropping to Kernel GUI (QUANTUM)\n", 76);
-    struct Window *window = init_window("EggOS Window", 50, 50, 200, 200);
+    put_string(0, 0, "Hello World", 0xFFFFFFFF, Backbuffer.buffer, (Backbuffer.pitch / sizeof(uint32_t)));
+    swap_buffers();
+    // PrepareACPI();
+    // terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;32m*\e[0;37m] [\e[0;36mWAVE\e[0;37m] ACPI via LAI: [\e[0;32mOK\e[0;37m]\n", 73);
+    // terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;34m*\e[0;37m] [\e[0;36mWAVE\e[0;37m] Dropping to Kernel GUI (QUANTUM)\n", 76);
+    struct Window *window = init_window("EggOS Window", 0, 0, 200, 200);
     
     draw_window(window);
     done();

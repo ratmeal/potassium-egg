@@ -1,3 +1,5 @@
+// PHOTON INTERNEL "Wave" Kernel
+// Code is governed by the GPL-2.0 license.
 #include "../limine.h"
 
 volatile struct limine_memmap_request memmap_request = {
