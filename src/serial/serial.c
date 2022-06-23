@@ -37,7 +37,7 @@ void write_serial(char a) {
 int serial_received() {
    return inb(PORT + 5) & 1;
 }
-// delete character from serial output
+
 
 char read_serial() {
    while (serial_received() == 0);

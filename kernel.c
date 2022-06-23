@@ -21,7 +21,8 @@
 // be made volatile or equivalent.
 // extern void fill_screen(uint64_t color);
 // extern void graphics_init();
-
+extern void draw_mint();
+extern struct limine_module_request modules_request;
 extern struct limine_kernel_file_request kernel_file_request;
 extern struct limine_terminal_request terminal_request;
 static void done(void) {
@@ -29,9 +30,7 @@ static void done(void) {
         __asm__("hlt");
     }
 };
-
 // The following will be our kernel's entry point.
-// NOTE: I should kill myself because my kernel will never be as good as all the other hobby projects
 void _start(void) {
     init_serial() != 0 ? done() : serial_print("Hello World!\n");
     
@@ -81,5 +80,9 @@ void _start(void) {
     struct Window *window = init_window("EggOS Window YEA YEA", 50, 50, 100, 500);
     
     draw_window(window);
+    serial_print("Window drawn\n");
+    serial_print("Scary time\n");
+    draw_mint();
+    swap_buffers();
     done();
 };

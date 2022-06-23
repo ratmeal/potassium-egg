@@ -10,8 +10,9 @@
 #include "graphics.h"
 extern struct limine_framebuffer_request framebuffer_request;
 struct GBuffer Backbuffer;
-
-
+extern uint8_t woah[];
+#define WOAH_HEIGHT 281
+#define WOAH_WIDTH 500
 void graphics_init(int screen)
 {
     struct limine_framebuffer *framebuffer = framebuffer_request.response->framebuffers[screen];
@@ -74,5 +75,26 @@ void put_string(uint64_t x, uint64_t y, char* str, uint64_t color, uint32_t* buf
             continue;   
         }
         draw_char(x + (i * 8), y, str[i], color, buffer, width);
+    }
+}
+volatile void draw_mint()
+{
+    uint32_t col_in;
+    uint8_t temp;
+    uint32_t col_out;
+    for (uint64_t i = 0; i < WOAH_HEIGHT; i++)
+    {
+        for (uint64_t j = 0; j < WOAH_WIDTH; j++)
+        {
+            col_in = ((uint32_t*)woah)[i * WOAH_WIDTH + j];
+            col_out = 0;
+            
+            col_out |= (col_in & 0xff000000);
+            col_out |= ((col_in & 0x00ff0000) >> 16);
+            col_out |= (col_in & 0x0000ff00);
+            col_out |= ((col_in & 0x000000ff) << 16);
+            
+            Backbuffer.buffer[i * Backbuffer.width + j] = col_out;
+        }
     }
 }

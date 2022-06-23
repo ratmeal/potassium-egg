@@ -56,7 +56,6 @@ void PrepareACPI()
         lai_create_namespace(); // this will kpanic safely 
         serial_print("lai worked....\n");
         
-        //lai_enable_acpi(1);
         //lai_create_namespace(); // can't do this until scanning acpi tables is implemented
         // give the pointer to other sdt a size
         // We Do XSDT
