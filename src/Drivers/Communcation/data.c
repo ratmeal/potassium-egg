@@ -28,3 +28,12 @@ uint32_t ind(uint16_t port) {
 void outd(uint16_t port, uint32_t data) {
     __asm__ volatile ("outl %1, %0" : : "dN" (port), "a" (data));
 }
+
+uint32_t inl(uint16_t port) {
+    uint32_t ret;
+    __asm__ volatile ("inl %1, %0" : "=a" (ret) : "dN" (port));
+    return ret;
+}
+void outl(uint16_t port, uint32_t data) {
+    __asm__ volatile ("outl %1, %0" : : "dN" (port), "a" (data));
+}

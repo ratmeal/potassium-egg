@@ -16,7 +16,7 @@ char *strncpy(char *s, const char *t, size_t n);
 
 
 int strcmp(char *s, char *t);
-int strncmp(char *s, char *t, size_t n);
+int strncmp(const char* s1, const char* s2, size_t n);
 
 // [7.24.5] Search functions
 

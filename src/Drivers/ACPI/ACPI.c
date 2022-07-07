@@ -28,6 +28,52 @@ bool doChecksum(struct acpi_header_t *tableHeader)
  
     return sum == 0;
 }
+// generic get table function
+void *GetTable(char* signature, size_t index)
+{
+    serial_print(signature);
+    serial_print("\n");
+    if (signature == "DSDT")
+    {
+        // we need to get the fadt
+        struct acpi_fadt_t *fadt;
+        for (int i = 0; i < ((xsdt->header.length - sizeof(struct acpi_header_t)) / 8); i++)
+        {
+            // get entry from pointer array as a ACPISDTHeader struct
+            struct acpi_header_t *entry = (struct acpi_header_t*)xsdt->tables[i];
+            
+            // using strncmp to compare the signature
+            // like this: strncmp(entry->Signature, "APIC", 3);
+            // it's 3 instead of 4 because there's some weird 4th byte (has to do with it not being null terminated idk)
+            // in the signature
+            // Comparring it with 4 bytes gives undefined behavior
+            if (strncmp(entry->signature, "FACP", 3) == 0)
+            {
+                fadt = (struct acpi_fadt_t*)entry;
+                
+            }
+        }
+        
+        if (fadt->x_dsdt != 0)
+        {
+            return (void*)fadt->x_dsdt;
+        }
+        else
+        {
+            return (void*)fadt->dsdt;
+        }
+    }
+    for (int i = 0; i < ((xsdt->header.length - sizeof(struct acpi_header_t)) / 8); i++)
+    {
+        
+        struct acpi_header_t *entry = (struct acpi_header_t*)xsdt->tables[i];
+        if (strncmp(entry->signature, signature, 3) == 0)
+        {
+            return (void*)(entry);
+        }
+    }
+    return NULL;
+}
 void PrepareACPI()
 {
     // detect if rsdp is acpi 1 or 2
@@ -55,7 +101,6 @@ void PrepareACPI()
         
         lai_create_namespace(); // this will kpanic safely 
         serial_print("lai worked....\n");
-        
         //lai_create_namespace(); // can't do this until scanning acpi tables is implemented
         // give the pointer to other sdt a size
         // We Do XSDT
@@ -88,40 +133,3 @@ void PrepareACPI()
     }
 }
 
-// generic get table function
-void *GetTable(char* signature, size_t index)
-{
-    serial_print(signature);
-    serial_print("\n");
-    if (signature == "DSDT")
-    {
-        // we need to get the fadt
-        struct acpi_fadt_t *fadt;
-        for (int i = 0; i < ((xsdt->header.length - sizeof(struct acpi_header_t)) / 8); i++)
-        {
-            // get entry from pointer array as a ACPISDTHeader struct
-            struct acpi_header_t *entry = (struct acpi_header_t*)xsdt->tables[i];
-            // using strncmp to compare the signature
-            // like this: strncmp(entry->Signature, "APIC", 3);
-            // it's 3 instead of 4 because there's some weird 4th byte (has to do with it not being null terminated idk)
-            // in the signature
-            // Comparring it with 4 bytes gives undefined behavior
-            if (strncmp(entry->signature, "FACP", 3) == 0)
-            {
-                fadt = (struct acpi_fadt_t*)entry;
-                
-            }
-        }
-        return (void*)(fadt->dsdt);
-    }
-    for (int i = 0; i < ((xsdt->header.length - sizeof(struct acpi_header_t)) / 8); i++)
-    {
-        
-        struct acpi_header_t *entry = (struct acpi_header_t*)xsdt->tables[i];
-        if (strncmp(entry->signature, signature, 3) == 0)
-        {
-            return (void*)(entry);
-        }
-    }
-    return NULL;
-}

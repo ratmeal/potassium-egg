@@ -11,8 +11,8 @@
 extern struct limine_framebuffer_request framebuffer_request;
 struct GBuffer Backbuffer;
 extern uint8_t woah[];
-#define WOAH_HEIGHT 281
-#define WOAH_WIDTH 500
+#define WOAH_HEIGHT 576
+#define WOAH_WIDTH 1024
 void graphics_init(int screen)
 {
     struct limine_framebuffer *framebuffer = framebuffer_request.response->framebuffers[screen];
@@ -94,7 +94,7 @@ volatile void draw_mint()
             col_out |= (col_in & 0x0000ff00);
             col_out |= ((col_in & 0x000000ff) << 16);
             
-            Backbuffer.buffer[i * Backbuffer.width + j] = col_out;
+            *(uint32_t*)(((uint8_t*)Backbuffer.buffer)+(4 * j + Backbuffer.pitch * i)) = col_out;
         }
     }
 }

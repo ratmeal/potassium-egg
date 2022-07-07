@@ -22,8 +22,14 @@ struct Window *init_window(char* title, uint64_t pos_x, uint64_t pos_y, uint64_t
 // this code is so bad that it's worth it to just end it all because it's so bad
 void draw_window(struct Window *window)
 {
-    
-    blit(window->pos_x, window->pos_y, window->fb.width, window->fb.height, window->fb.buffer, window->fb.width, Backbuffer.buffer, Backbuffer.width);
-    put_string(window->pos_x, window->pos_y, window->title, 0xEEEEEE, Backbuffer.buffer, Backbuffer.width);
+    for (uint64_t i = 0; i < window->fb.height; i++)
+    {
+        for (uint64_t j = 0; j < window->fb.width; j++)
+        {
+            window->fb.buffer[i * window->fb.width + j] = 0x80808080;
+        }
+    }
+    blit(window->pos_x, window->pos_y, window->fb.width, window->fb.height, window->fb.buffer, window->fb.width, Backbuffer.buffer, Backbuffer.pitch / 4);
+    put_string(window->pos_x, window->pos_y, window->title, 0xEEEEEE, Backbuffer.buffer, Backbuffer.pitch / 4);
     swap_buffers();
 }

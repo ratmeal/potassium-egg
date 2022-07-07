@@ -10,6 +10,7 @@
 #include "../utils.h"
 #include "pmm.h"
 #include "../Graphics/graphics.h"
+
 extern struct limine_hhdm_request hhdm_request;
 static bool vmm_init_ = false;
 const uint64_t pte_present = (uint64_t)1 << 0;
@@ -136,6 +137,28 @@ void flag_page(struct PageMap *pagemap, uint64_t virt, uint64_t flags)
         invlpg(virt);
     }
 }
+// write to msr
+void write_msr(uint64_t msr, uint64_t value)
+{
+    __asm__ volatile ("wrmsr" ::"a"(value), "c"(msr) : "memory");
+}
+// read from msr
+uint64_t read_msr(uint64_t msr)
+{
+    uint64_t ret;
+    __asm__ volatile ("rdmsr" : "=a"(ret) : "c"(msr));
+    return ret;
+}
+// // enable wc for a page
+// void set_caching(uint64_t virt)
+// {
+//     uint64_t *pte_p = virt2pte(&kernel_pagemap, virt, false);
+//     if (pte_p == NULL)
+//     {
+//         return;
+//     }
+//     // we need to set the pat bit in the pte address to enable wc
+// }
 void map_page(struct PageMap *pagemap, uint64_t virt, uint64_t phys, uint64_t flags)
 {
     acquire(&pagemap->l);

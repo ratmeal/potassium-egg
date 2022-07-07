@@ -16,13 +16,14 @@
 #include "src/Drivers/Communcation/data.h"
 #include "src/kpanic/panic.h"
 #include "src/Quantum/Window/Window.h"
+#include "src/CPU/init.h"
+#include "src/Drivers/Timers/HPET.h"
 // The Limine requests can be placed anywhere, but it is important that
 // the compiler does not optimise them away, so, usually, they should
 // be made volatile or equivalent.
 // extern void fill_screen(uint64_t color);
 // extern void graphics_init();
 extern void draw_mint();
-extern struct limine_module_request modules_request;
 extern struct limine_kernel_file_request kernel_file_request;
 extern struct limine_terminal_request terminal_request;
 static void done(void) {
@@ -49,6 +50,7 @@ void _start(void) {
     //fill_screen(0x018281);
     // read serial;
     vmm_init();
+    enable_pat();
     //graphics_init();
     
     uint64_t a = available_memory();
@@ -74,15 +76,21 @@ void _start(void) {
     terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;32m*\e[0;37m] [\e[0;36mWAVE\e[0;37m] Graphics: [\e[0;32mOK\e[0;37m]\n", 69);
     put_string(0, 0, "Hello World", 0xFFFFFFFF, Backbuffer.buffer, (Backbuffer.pitch / sizeof(uint32_t)));
     swap_buffers();
-    // PrepareACPI();
+    PrepareACPI();
     // terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;32m*\e[0;37m] [\e[0;36mWAVE\e[0;37m] ACPI via LAI: [\e[0;32mOK\e[0;37m]\n", 73);
     // terminal_request.response->write(terminal_request.response->terminals[0], "[\e[0;34m*\e[0;37m] [\e[0;36mWAVE\e[0;37m] Dropping to Kernel GUI (QUANTUM)\n", 76);
-    struct Window *window = init_window("EggOS Window YEA YEA", 50, 50, 100, 500);
+    struct Window *window = init_window("EggOS Window YEA YEA", 50, 50, 200, 200);
     
     draw_window(window);
     serial_print("Window drawn\n");
     serial_print("Scary time\n");
     draw_mint();
     swap_buffers();
+    put_string(550, 600, "I love limine!!!", 0xFFFFFFFF, Backbuffer.buffer, (Backbuffer.pitch / sizeof(uint32_t)));
+    swap_buffers();
+    hpet_init();
+    serial_print("testing sleep\n");
+    sleep(5000);
+    serial_print("done sleeping\n");
     done();
 };
