@@ -1,20 +1,24 @@
 # This is the name that our final kernel executable will have.
 # Change as needed.
-override KERNEL := photon.elf
-
+override KERNEL := potassium.elf
+ 
+# Convenience macro to reliably declare overridable command variables.
+define DEFAULT_VAR =
+    ifeq ($(origin $1), default)
+        override $(1) := $(2)
+    endif
+    ifeq ($(origin $1), undefined)
+        override $(1) := $(2)
+    endif
+endef
+ 
 # It is highly recommended to use a custom built cross toolchain to build a kernel.
 # We are only using "cc" as a placeholder here. It may work by using
 # the host system's toolchain, but this is not guaranteed.
-# change this to the path to your cross compiler.
-CC := /home/rayan/osdev/cross/bin/x86_64-elf-gcc
+CC := cc
 CC_ASM := /usr/bin/nasm
-# Likewise, "ld" here is just a placeholder and your mileage may vary if using the
-# host's "ld".
-
-LD := /home/rayan/osdev/cross/bin/x86_64-elf-ld
-
- 
-# User controllable CFLAGS.
+CCX := g++
+## User controllable CFLAGS.
 CFLAGS ?= -O2 -g -Wall -Wextra -Wpedantic -pipe
 ASMFLAGS ?= -f elf64
 # User controllable linker flags. We set none by default.
@@ -38,8 +42,9 @@ override INTERNALCFLAGS :=   \
 	-mcmodel=kernel      \
 	-MMD				 \
 	-w 					 \
+	-Ikernel/include/kernel     \
+	-Ilibc/include				\
 	-Isrc/Implementations/lai/laisub/include/ \
-	-O2
  
 # Internal linker flags that should not be changed by the user.
 override INTERNALLDFLAGS :=    \
@@ -50,30 +55,58 @@ override INTERNALLDFLAGS :=    \
  
 # Use find to glob all *.c files in the directory and extract the object names.
 override CFILES := $(shell find ./ -type f -name '*.c')
+override CXXFILES := $(shell find ./ -type f -name '*.cpp')
 # get asm stub files
 override ASMSTUB := $(shell find ./ -type f -name '*.s')
+override CARGOPROJECTFOLDERS := $(shell find ./ -type f -name '*Cargo.toml' -exec dirname {} \;)
 override OBJ := $(CFILES:.c=.o)
+override OBJ_CXX := $(CXXFILES:.cpp=.o)
 override HEADER_DEPS := $(CFILES:.c=.d)
+override HEADER_DEPS_CXX := $(CXXFILES:.cpp=.d)
 override OBJ_ASM := $(ASMSTUB:.s=.o)
 override HEADER_DEPS_ASM := $(ASMSTUB:.s=.d)
- 
 # Default target.
+
 .PHONY: all
 all: $(KERNEL)
  
 # Link rules for the final kernel executable.
-$(KERNEL): $(OBJ) $(OBJ_ASM)
-	$(LD) $(OBJ) $(OBJ_ASM) $(LDFLAGS) $(INTERNALLDFLAGS) -o $@
- 
+$(KERNEL): $(OBJ) $(OBJ_CXX) $(OBJ_ASM)
+ifneq "$(wildcard $(CARGOPROJECTFOLDERS)/Cargo.toml)" ""
+	@make crust
+	@$(LD) $(OBJ) $(OBJ_CXX) $(OBJ_ASM) $(CARGOPROJECTFOLDERS)/target/x86_64-unknown-none/release/libcrust.a $(LDFLAGS) $(INTERNALLDFLAGS) -o $@
+else
+	@$(LD) $(OBJ) $(OBJ_CXX) $(OBJ_ASM) $(LDFLAGS) $(INTERNALLDFLAGS) -o $@
+endif
+
+	
+
+crust:
+	@echo "compiling crust :trl:"
+ifneq "$(wildcard $(CARGOPROJECTFOLDERS)/Cargo.toml)" ""
+	@cargo +nightly build --release --manifest-path $(CARGOPROJECTFOLDERS)/Cargo.toml
+else
+	@echo "no cargo, Skipping"
+endif
+	
 # Compilation rules for *.c files.
 -include $(HEADER_DEPS)
 %.o: %.c
 	$(CC) $(CFLAGS) $(INTERNALCFLAGS) -c $< -o $@
+
+-include $(HEADER_DEPS_CXX)
+%.o: %.cpp
+	$(CXX) $(CFLAGS) $(INTERNALCFLAGS) -c $< -o $@
+
 -include $(HEADER_DEPS_ASM)
 %.o: %.s
+	
 	$(CC_ASM) $(ASMFLAGS) -s $< -o $@
+
+
 .PHONY: everything
 everything:
+	@make clean
 	@echo "---OS BUILD START!---"
 	@echo "---BUILDING THE KERNEL---"
 	@make
@@ -91,7 +124,7 @@ upsubs:
 .PHONY: run
 run:
 	@echo "---RUNNING---"
-	@qemu-system-x86_64 image.iso -serial stdio -enable-kvm -m 3G -smp 2 -bios /usr/share/edk2-ovmf/x64/OVMF_CODE.fd -machine q35 -soundhw pcspk
+	@qemu-system-x86_64 image.iso -serial stdio -cpu host -enable-kvm -m 3G -smp 2 -bios /usr/share/edk2-ovmf/x64/OVMF_CODE.fd -machine q35 -soundhw pcspk
 	@echo "---RUNNING FINISHED---"
 .PHONY: debug_run
 debug_run:
@@ -103,7 +136,7 @@ debug_run:
 clean:
 ifeq "$(wildcard $(KERNEL))" "$(KERNEL)"
 	@echo "Removing Kernel and object files..."
-	@rm -rf $(KERNEL) $(OBJ) $(HEADER_DEPS)
+	@rm -rf $(KERNEL) $(OBJ) $(OBJ_CXX) $(OBJ_ASM) $(HEADER_DEPS)
 	@echo "Done!"
 else
 	@echo "No kernel or object files to clean, Skipping..."
@@ -143,6 +176,13 @@ ifneq "$(wildcard *.o)" ""
 	@echo "Done!"
 else
 	@echo "No .o files to clean, Skipping..."
+endif
+ifneq "$(wildcard *.a)" ""
+	@echo "Removing .a files"
+	@rm -rf *.a
+	@echo "Done!"
+else
+	@echo "No .a files to clean, Skipping..."
 endif
 	@echo "---LEFTOVER CLEANUP---"
 stage2:

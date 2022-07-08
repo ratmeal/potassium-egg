@@ -24,8 +24,10 @@
 // extern void fill_screen(uint64_t color);
 // extern void graphics_init();
 extern void draw_mint();
+extern void lapicinit(uint64_t hhdm);
 extern struct limine_kernel_file_request kernel_file_request;
 extern struct limine_terminal_request terminal_request;
+extern struct limine_hhdm_request hhdm_request;
 static void done(void) {
     for (;;) {
         __asm__("hlt");
@@ -39,18 +41,24 @@ void _start(void) {
     // a simple "Hello World" to screen.
     uint64_t gdt = init_gdt();
     serial_print("GDT loaded\n");
+
     init_idt();
     serial_print("IDT loaded\n");
     
     pmm_init();
     serial_print("PMM loaded\n");
+
     // free memory in kilobytes
     //kpanic("don don", sizeof("don don"));
     //graphics_init();
     //fill_screen(0x018281);
     // read serial;
+
+
     vmm_init();
     enable_pat();
+
+
     //graphics_init();
     
     uint64_t a = available_memory();
@@ -84,13 +92,25 @@ void _start(void) {
     draw_window(window);
     serial_print("Window drawn\n");
     serial_print("Scary time\n");
-    draw_mint();
+    draw_banana();
     swap_buffers();
     put_string(550, 600, "I love limine!!!", 0xFFFFFFFF, Backbuffer.buffer, (Backbuffer.pitch / sizeof(uint32_t)));
     swap_buffers();
+
+    
+    lapicinit(hhdm_request.response->offset);
     hpet_init();
     serial_print("testing sleep\n");
+    swap_buffers();
+    put_string(550, 650, "sleeping", 0xFFFFFFFF, Backbuffer.buffer, (Backbuffer.pitch / sizeof(uint32_t)));
+    swap_buffers();
     sleep(5000);
     serial_print("done sleeping\n");
+    swap_buffers();
+    put_string(550, 680, "done", 0xFFFFFFFF, Backbuffer.buffer, (Backbuffer.pitch / sizeof(uint32_t)));
+    swap_buffers();
+
+
+
     done();
 };

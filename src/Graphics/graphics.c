@@ -8,6 +8,9 @@
 #include "../memory/heap.h"
 #include "../memory/pmm.h"
 #include "graphics.h"
+#include "../Graphics/images/xboxlive.h"
+#include "../Graphics/images/bnaaa.h"
+
 extern struct limine_framebuffer_request framebuffer_request;
 struct GBuffer Backbuffer;
 extern uint8_t woah[];
@@ -87,6 +90,48 @@ volatile void draw_mint()
         for (uint64_t j = 0; j < WOAH_WIDTH; j++)
         {
             col_in = ((uint32_t*)woah)[i * WOAH_WIDTH + j];
+            col_out = 0;
+            
+            col_out |= (col_in & 0xff000000);
+            col_out |= ((col_in & 0x00ff0000) >> 16);
+            col_out |= (col_in & 0x0000ff00);
+            col_out |= ((col_in & 0x000000ff) << 16);
+            
+            *(uint32_t*)(((uint8_t*)Backbuffer.buffer)+(4 * j + Backbuffer.pitch * i)) = col_out;
+        }
+    }
+}
+
+volatile void draw_xboxlive(){
+    uint32_t col_in;
+    uint8_t temp;
+    uint32_t col_out;
+    for (uint64_t i = 0; i < XBOXLIVE_HEIGHT; i++)
+    {
+        for (uint64_t j = 0; j < XBOXLIVE_WIDTH; j++)
+        {
+            col_in = ((uint32_t*)xboxlive)[i * XBOXLIVE_WIDTH + j];
+            col_out = 0;
+            
+            col_out |= (col_in & 0xff000000);
+            col_out |= ((col_in & 0x00ff0000) >> 16);
+            col_out |= (col_in & 0x0000ff00);
+            col_out |= ((col_in & 0x000000ff) << 16);
+            
+            *(uint32_t*)(((uint8_t*)Backbuffer.buffer)+(4 * j + Backbuffer.pitch * i)) = col_out;
+        }
+    }
+}
+
+volatile void draw_banana(){
+    uint32_t col_in;
+    uint8_t temp;
+    uint32_t col_out;
+    for (uint64_t i = 0; i < BNAAA_HEIGHT; i++)
+    {
+        for (uint64_t j = 0; j < BNAAA_WIDTH; j++)
+        {
+            col_in = ((uint32_t*)bnaaa)[i * BNAAA_WIDTH + j];
             col_out = 0;
             
             col_out |= (col_in & 0xff000000);
