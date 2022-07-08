@@ -6,12 +6,12 @@ override KERNEL := photon.elf
 # We are only using "cc" as a placeholder here. It may work by using
 # the host system's toolchain, but this is not guaranteed.
 # change this to the path to your cross compiler.
-CC := /home/rayan/osdev/cross/bin/x86_64-elf-gcc
+CC := cc
 CC_ASM := /usr/bin/nasm
 # Likewise, "ld" here is just a placeholder and your mileage may vary if using the
 # host's "ld".
 
-LD := /home/rayan/osdev/cross/bin/x86_64-elf-ld
+LD := ld
 
  
 # User controllable CFLAGS.
