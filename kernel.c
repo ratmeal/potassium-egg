@@ -48,8 +48,6 @@ void _start(void) {
     pmm_init();
     serial_print("PMM loaded\n");
 
-    
-
     // free memory in kilobytes
     //kpanic("don don", sizeof("don don"));
     //graphics_init();
@@ -65,13 +63,12 @@ void _start(void) {
     
     uint64_t a = available_memory();
     uint64_t b = total_memory();
-    uint64_t c = total_memory() - available_memory();
     serial_print("Available Memory: ");
     
     serial_print(to_hstring(a));
     serial_print(" bytes\n");
     serial_print("Used Memory: ");
-    serial_print(to_hstring(c));
+    serial_print(to_hstring(b - a));
     serial_print(" bytes\n");
     serial_print("Total Memory: ");
     serial_print(to_hstring(b));
@@ -100,9 +97,8 @@ void _start(void) {
     put_string(550, 600, "I love limine!!!", 0xFFFFFFFF, Backbuffer.buffer, (Backbuffer.pitch / sizeof(uint32_t)));
     swap_buffers();
 
-    serial_print("lapic attempt\n");
-    //lapicinit(hhdm_request.response->offset);
-    serial_print("lapic successful\n");
+    
+    lapicinit(hhdm_request.response->offset);
     hpet_init();
     serial_print("testing sleep\n");
     swap_buffers();
@@ -114,7 +110,7 @@ void _start(void) {
     put_string(550, 680, "done", 0xFFFFFFFF, Backbuffer.buffer, (Backbuffer.pitch / sizeof(uint32_t)));
     swap_buffers();
 
-    
+
 
     done();
 };
