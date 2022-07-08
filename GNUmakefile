@@ -56,6 +56,7 @@ override OBJ := $(CFILES:.c=.o)
 override HEADER_DEPS := $(CFILES:.c=.d)
 override OBJ_ASM := $(ASMSTUB:.s=.o)
 override HEADER_DEPS_ASM := $(ASMSTUB:.s=.d)
+override CARGOPROJECTFOLDERS := $(shell find ./ -type f -name '*Cargo.toml' -exec dirname {} \;)
  
 # Default target.
 .PHONY: all
@@ -63,8 +64,17 @@ all: $(KERNEL)
  
 # Link rules for the final kernel executable.
 $(KERNEL): $(OBJ) $(OBJ_ASM)
+	@make crust
+ifneq "$(CARGOPROJECTFOLDERS)" ""
+	$(LD) $(OBJ) $(OBJ_ASM) $(CARGOPROJECTFOLDERS)/target/x86_64-unknown-none/release/libcrust.a $(LDFLAGS) $(INTERNALLDFLAGS) -o $@
+else
 	$(LD) $(OBJ) $(OBJ_ASM) $(LDFLAGS) $(INTERNALLDFLAGS) -o $@
- 
+endif
+crust:
+ifneq "$(CARGOPROJECTFOLDERS)" ""
+	@echo "compiling crust :trl:"
+	cargo +nightly build --release --manifest-path $(CARGOPROJECTFOLDERS)/Cargo.toml
+endif
 # Compilation rules for *.c files.
 -include $(HEADER_DEPS)
 %.o: %.c
@@ -143,6 +153,13 @@ ifneq "$(wildcard *.o)" ""
 	@echo "Done!"
 else
 	@echo "No .o files to clean, Skipping..."
+endif
+ifneq "$(wildcard *.a)" ""
+	@echo "Removing .a files"
+	@rm -rf *.a
+	@echo "Done!"
+else
+	@echo "No .a files to clean, Skipping..."
 endif
 	@echo "---LEFTOVER CLEANUP---"
 stage2:
