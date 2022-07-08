@@ -24,10 +24,10 @@
 // extern void fill_screen(uint64_t color);
 // extern void graphics_init();
 extern void draw_mint();
-extern void lapicinit(uint64_t hhdm);
+//extern void lapicinit(uint64_t hhdm);
 extern struct limine_kernel_file_request kernel_file_request;
 extern struct limine_terminal_request terminal_request;
-extern struct limine_hhdm_request hhdm_request;
+//extern struct limine_hhdm_request hhdm_request;
 static void done(void) {
     for (;;) {
         __asm__("hlt");
@@ -98,7 +98,7 @@ void _start(void) {
     swap_buffers();
 
     
-    lapicinit(hhdm_request.response->offset);
+    //lapicinit(hhdm_request.response->offset);
     hpet_init();
     serial_print("testing sleep\n");
     swap_buffers();
